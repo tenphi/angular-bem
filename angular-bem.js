@@ -61,22 +61,21 @@
       restrict: 'A',
       require: ['^block', '?block', '?element'],
       link: function(scope, el, attrs, ctrls) {
+        var modMap = {};
         var blockCtrl = ctrls[0] || ctrls[1];
         var elementCtrl = ctrls[2];
 
-        var longTemplate = '{block}__{element}_{mod}{value}';
-        var shortTemplate = '{block}_{mod}{value}';
         var blockName = blockCtrl.name;
 
         function setMods() {
           var elementNames = (elementCtrl && elementCtrl.names) || [];
 
-          if (!scope.mods) return;
-          var mods = Object.keys(scope.mods);
+          if (!modMap) return;
+          var mods = Object.keys(modMap);
 
           for (var i = 0, len = mods.length; i < len; i++) {
             var mod = mods[i];
-            var modValue = scope.mods[mod];
+            var modValue = modMap[mod];
             var modName = formatName(mod);
 
             var shortClass = blockName
@@ -106,7 +105,10 @@
           }
         }
 
-        scope.$watch('mods', setMods, true);
+        scope.$watch(function() {
+          modMap = scope.$eval(attrs.mods);
+          setMods();
+        }, true);
 
         el.removeAttr('mods');
       }
