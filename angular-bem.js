@@ -42,8 +42,7 @@
       link: function(scope, el, attrs, ctrls) {
         var blockCtrl = ctrls[0];
         var elementCtrl = ctrls[1];
-
-        console.log(scope.parentBlockController);
+        
         if (elementCtrl && blockCtrl.$el[0] === elementCtrl.$el[0]) {
           blockCtrl = scope.parentBlockController;
         }
