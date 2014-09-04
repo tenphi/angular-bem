@@ -1,0 +1,23 @@
+{
+  "name": "angular-bem",
+  "version": "0.0.0",
+  "authors": [
+    "Andrey Yamanov <tenphi@gmail.com>"
+  ],
+  "main": "angular-bem.js",
+  "keywords": [
+    "angular",
+    "bem"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "angular": "~1.2.23"
+  }
+}
