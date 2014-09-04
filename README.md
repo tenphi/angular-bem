@@ -20,7 +20,7 @@ Create a simple markup:
 ```html
 <body ng-app="app">
   <div block="my-block">
-    <div element="my-element" mods="{ myMod: 'my-value'}"></div>
+    <div element="my-element" mods="{ myMod: 'my-value', mySecondMod: true }"></div>
   </div>
 </body>
 ```
@@ -29,7 +29,7 @@ It will be transformed into following markup:
 
 ```html
 <div class="my-block">
-  <div class="my-block__my-element my-block__my-element_my-mod_my-value"></div>
+  <div class="my-block__my-element my-block__my-element_my-mod_my-value my-block__my-element_my-second-mod"></div>
 </div>
 ```
 
