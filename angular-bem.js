@@ -15,6 +15,11 @@
     return {
       restrict: 'EA',
       controller: function BlockCtrl($scope, $element, $attrs) {
+        this.$el = $element;
+        if ($scope.blockController) {
+          $scope.parentBlockController = $scope.blockController;
+        }
+        $scope.blockController = this;
 
         if (!$attrs.block) return;
 
@@ -31,12 +36,17 @@
     return {
       restrict: 'EA',
       require: ['^block', 'element'],
-      controller: function ElementCtrl() {
-
+      controller: function ElementCtrl($element) {
+        this.$el = $element;
       },
       link: function(scope, el, attrs, ctrls) {
         var blockCtrl = ctrls[0];
         var elementCtrl = ctrls[1];
+
+        console.log(scope.parentBlockController);
+        if (elementCtrl && blockCtrl.$el[0] === elementCtrl.$el[0]) {
+          blockCtrl = scope.parentBlockController;
+        }
 
         elementCtrl.names = [];
 
@@ -59,11 +69,11 @@
 
     return {
       restrict: 'A',
-      require: ['^block', '?block', '?element'],
+      require: ['^block', '?element'],
       link: function(scope, el, attrs, ctrls) {
         var modMap = {};
         var blockCtrl = ctrls[0] || ctrls[1];
-        var elementCtrl = ctrls[2];
+        var elementCtrl = ctrls[1];
 
         var blockName = blockCtrl.name;
 
