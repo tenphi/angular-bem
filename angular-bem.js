@@ -9,6 +9,45 @@
     return s.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase();});
   }
 
+  var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
+
+  if (classListSupport) {
+    getClasses = function(el) {
+      return Array.prototype.slice.call(el[0].classList);
+    };
+
+    addClass = function(el, cls) {
+      el[0].classList.add(cls);
+    };
+
+    removeClass = function(el, cls) {
+      el[0].classList.remove(cls);
+    };
+  } else {
+    getClasses = function(el) {
+      return el[0].className.split(/\s/g);
+    };
+
+    addClass = function(el, cls) {
+      el.addClass(cls);
+    };
+
+    removeClass = function(el, cls) {
+      el.removeClass(cls);
+    };
+  }
+
+  function removeClassesWithPrefix(el, prefix) {
+    var classes = getClasses(el);
+    var size = prefix.length, cls, i, len;
+    for (i = 0, len = classes.length; i < len; i++) {
+      cls = classes[i];
+      if (cls.slice(0, size) === prefix) {
+        removeClass(el, cls);
+      }
+    }
+  }
+
   var module = angular.module('tenphi.bem', []);
 
   module.directive('block', function($compile) {
@@ -26,8 +65,8 @@
         var blockName = $attrs.block;
         this.name = blockName;
 
-        $element.removeAttr('block');
-        $element.addClass(blockName);
+        $element[0].removeAttribute('block');
+        addClass($element, blockName);
       }
     }
   });
@@ -55,11 +94,11 @@
         elementCtrl.names = attrs.element.split(/\s/g);
 
         elementCtrl.names.forEach(function(name) {
-          el.removeClass(name);
-          el.addClass(blockCtrl.name + '__' + name);
+          removeClass(el, name);
+          addClass(el, blockCtrl.name + '__' + name);
         });
 
-        el.removeAttr('element');
+        el[0].removeAttribute('element');
       }
     }
   });
@@ -94,9 +133,9 @@
 
             if (!elementNames.length) {
               if (modValue) {
-                el.addClass(shortClass);
+                addClass(el, shortClass)
               } else {
-                el.removeClass(shortClass);
+                removeClassesWithPrefix(el, classPrefix);
               }
             } else {
               elementNames.forEach(function(elementName) {
@@ -107,16 +146,9 @@
                   + (typeof(modValue) === 'string' ? '_' + modValue : '');
 
                 if (modValue) {
-                  el.addClass(longClass);
+                  addClass(el, longClass)
                 } else {
-                  el.removeClass(longClass);
-                  var classes = el[0].className.split(/\s/g);
-                  var len = classPrefix.length;
-                  classes.forEach(function(cls) {
-                    if (cls.slice(0, len) === classPrefix) {
-                      el.removeClass(cls);
-                    }
-                  });
+                  removeClassesWithPrefix(el, classPrefix);
                 }
               });
             }
@@ -128,7 +160,7 @@
           setMods();
         }, true);
 
-        el.removeAttr('mods');
+        el[0].removeAttribute('mods');
       }
     }
   });
