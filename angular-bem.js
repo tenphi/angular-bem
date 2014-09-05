@@ -9,6 +9,17 @@
     return s.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase();});
   }
 
+  function handleModMap(modMap) {
+    var tmp;
+    if (typeof(modMap) === 'string') {
+      tmp = {};
+      tmp[modMap] = true;
+      return tmp;
+    } else {
+      return modMap;
+    }
+  }
+
   var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
 
   if (classListSupport) {
@@ -37,12 +48,13 @@
     };
   }
 
-  function removeClassesWithPrefix(el, prefix) {
+  function removeClassesWithPrefix(el, prefix, except) {
     var classes = getClasses(el);
     var size = prefix.length, cls, i, len;
     for (i = 0, len = classes.length; i < len; i++) {
       cls = classes[i];
-      if (cls.slice(0, size) === prefix) {
+      console.log(cls, prefix);
+      if (cls.slice(0, size) === prefix && except !== cls) {
         removeClass(el, cls);
       }
     }
@@ -55,9 +67,14 @@
       restrict: 'EA',
       controller: function BlockCtrl($scope, $element, $attrs) {
         this.$el = $element;
-        if ($scope.blockController) {
-          $scope.parentBlockController = $scope.blockController;
+        var $tmp = $scope;
+        while($tmp) {
+          if ($tmp.blockController) {
+            this.parent = $tmp.blockController;
+          }
+          $tmp = $tmp.$parent;
         }
+
         $scope.blockController = this;
 
         if (!$attrs.block) return;
@@ -83,9 +100,13 @@
         var elementCtrl = ctrls[1];
 
         if (elementCtrl && blockCtrl.$el[0] === elementCtrl.$el[0]) {
-          blockCtrl = scope.parentBlockController;
+          blockCtrl = blockCtrl.parent;
+          if (!blockCtrl) {
+            throw new Error('angular-bem: element doesn\'t have parent block');
+          }
         }
 
+        elementCtrl.blockName = blockCtrl.name;
         elementCtrl.names = [];
 
         if (!attrs.element) return;
@@ -103,22 +124,21 @@
     }
   });
 
-  module.directive('mods', function() {
-
+  module.directive('blockMod', function() {
     return {
       restrict: 'A',
-      require: ['^block', '?element'],
-      link: function(scope, el, attrs, ctrls) {
+      require: 'block',
+      link: function(scope, el, attrs, ctrl) {
         var modMap = {};
-        var blockCtrl = ctrls[0] || ctrls[1];
-        var elementCtrl = ctrls[1];
+        var blockName = ctrl.name;
 
-        var blockName = blockCtrl.name;
+        function setMod() {
+          if (!modMap) {
+            removeClassesWithPrefix(el, blockName + '_');
+            return;
+          }
 
-        function setMods() {
-          var elementNames = (elementCtrl && elementCtrl.names) || [];
-
-          if (!modMap) return;
+          modMap = handleModMap(modMap);
           var mods = Object.keys(modMap);
 
           for (var i = 0, len = mods.length; i < len; i++) {
@@ -126,41 +146,75 @@
             var modValue = modMap[mod];
             var modName = formatName(mod);
 
-            var classPrefix = blockName
-              + '_' + modName;
-            var shortClass = classPrefix
+            var classPrefix = blockName + '_';
+            var className = classPrefix
+              + modName
               + (typeof(modValue) === 'string' ? '_' + modValue : '');
 
-            if (!elementNames.length) {
-              if (modValue) {
-                addClass(el, shortClass)
-              } else {
-                removeClassesWithPrefix(el, classPrefix);
-              }
-            } else {
-              elementNames.forEach(function(elementName) {
-                var classPrefix = blockName
-                  + '__' + elementName
-                  + '_' + modName;
-                var longClass = classPrefix
-                  + (typeof(modValue) === 'string' ? '_' + modValue : '');
-
-                if (modValue) {
-                  addClass(el, longClass)
-                } else {
-                  removeClassesWithPrefix(el, classPrefix);
-                }
-              });
+            removeClassesWithPrefix(el, classPrefix + modName, modValue ? className : null);
+            if (modValue) {
+              addClass(el, className);
             }
           }
         }
 
         scope.$watch(function() {
-          modMap = scope.$eval(attrs.mods);
-          setMods();
+          modMap = scope.$eval(attrs.blockMod);
+          setMod();
         }, true);
 
-        el[0].removeAttribute('mods');
+        el[0].removeAttribute('block-mod');
+      }
+    }
+  });
+
+  module.directive('elementMod', function() {
+    return {
+      restrict: 'A',
+      require: 'element',
+      link: function(scope, el, attrs, ctrl) {
+        var modMap = {};
+
+        function setMod() {
+          var blockName = ctrl.blockName;
+          var elementNames = ctrl.names || [];
+
+          if (!modMap) {
+            elementNames.forEach(function(elementName) {
+              removeClassesWithPrefix(el, blockName + '__' + elementName + '_');
+            });
+            return;
+          }
+
+          modMap = handleModMap(modMap);
+          var mods = Object.keys(modMap);
+
+          for (var i = 0, len = mods.length; i < len; i++) {
+            var mod = mods[i];
+            var modValue = modMap[mod];
+            var modName = formatName(mod);
+
+            elementNames.forEach(function(elementName) {
+              var classPrefix = blockName
+                + '__' + elementName
+                + '_' + modName;
+              var className = classPrefix
+                + (typeof(modValue) === 'string' ? '_' + modValue : '');
+
+              removeClassesWithPrefix(el, classPrefix, modValue ? className : null);
+              if (modValue) {
+                addClass(el, className);
+              }
+            });
+          }
+        }
+
+        scope.$watch(function() {
+          modMap = scope.$eval(attrs.elementMod);
+          setMod();
+        }, true);
+
+        el[0].removeAttribute('element-mod');
       }
     }
   });
