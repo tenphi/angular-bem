@@ -42,7 +42,7 @@
       link: function(scope, el, attrs, ctrls) {
         var blockCtrl = ctrls[0];
         var elementCtrl = ctrls[1];
-        
+
         if (elementCtrl && blockCtrl.$el[0] === elementCtrl.$el[0]) {
           blockCtrl = scope.parentBlockController;
         }
@@ -87,8 +87,9 @@
             var modValue = modMap[mod];
             var modName = formatName(mod);
 
-            var shortClass = blockName
-              + '_' + modName
+            var classPrefix = blockName
+              + '_' + modName;
+            var shortClass = classPrefix
               + (typeof(modValue) === 'string' ? '_' + modValue : '');
 
             if (!elementNames.length) {
@@ -99,15 +100,23 @@
               }
             } else {
               elementNames.forEach(function(elementName) {
-                var longClass = blockName
+                var classPrefix = blockName
                   + '__' + elementName
-                  + '_' + modName
+                  + '_' + modName;
+                var longClass = classPrefix
                   + (typeof(modValue) === 'string' ? '_' + modValue : '');
 
                 if (modValue) {
                   el.addClass(longClass);
                 } else {
                   el.removeClass(longClass);
+                  var classes = el[0].className.split(/\s/g);
+                  var len = classPrefix.length;
+                  classes.forEach(function(cls) {
+                    if (cls.slice(0, len) === classPrefix) {
+                      el.removeClass(cls);
+                    }
+                  });
                 }
               });
             }
