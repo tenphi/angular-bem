@@ -19,8 +19,8 @@ Create a simple markup:
 
 ```html
 <body ng-app="app">
-  <div block="my-block">
-    <div element="my-element" mods="{ myMod: 'my-value', mySecondMod: true }"></div>
+  <div block="my-block" block-mod="{ blockMod: 'my-block-value' }">
+    <div element="my-element" element-mod="{ myMod: 'my-value', mySecondMod: true }"></div>
   </div>
 </body>
 ```
@@ -28,7 +28,7 @@ Create a simple markup:
 It will be transformed into following markup:
 
 ```html
-<div class="my-block">
+<div class="my-block my-block_block-mod_my-block-value">
   <div class="my-block__my-element my-block__my-element_my-mod_my-value my-block__my-element_my-second-mod"></div>
 </div>
 ```
@@ -36,7 +36,6 @@ It will be transformed into following markup:
 ## Need to know
 * These directives don't use isolated scope. So you can freely use them in various cases even in templates of directives with `replace` option.
 * You can specify multiple elements in one node: `<div element="my-element my-second-element"></div>`
-* You can use `mods` with blocks too.
 * You can specify elements of parent block and nested block in one node. `<div block="my-block"><div block="nested-block" element="my-element"></div></div>` > `<div class="my-block"><div class="nested-block my-block__my-element"></div></div>`
 * There is **no way** to create an element of parent node **inside** nested block.
 
