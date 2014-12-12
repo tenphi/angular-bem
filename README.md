@@ -19,8 +19,8 @@ Create a simple markup:
 
 ```html
 <body ng-app="app">
-  <div block="my-block" block-mod="{ blockMod: 'my-block-value' }">
-    <div element="my-element" element-mod="{ myMod: 'my-value', mySecondMod: true }"></div>
+  <div block="my-block" mods="{ blockMod: 'my-block-value' }">
+    <div element="my-element" mods="{ myMod: 'my-value', mySecondMod: true }"></div>
   </div>
 </body>
 ```
@@ -35,8 +35,7 @@ It will be transformed into following markup:
 
 ## Need to know
 * These directives don't use isolated scope. So you can freely use them in various cases even in templates of directives with `replace` option.
-* You can specify multiple elements in one node: `<div element="my-element my-second-element"></div>`
-* You can specify elements of parent block and nested block in one node. `<div block="my-block"><div block="nested-block" element="my-element"></div></div>` > `<div class="my-block"><div class="nested-block my-block__my-element"></div></div>`
+* You can't specify multiple elements/blocks in one node.
 * There is **no way** to create an element of parent block **inside** nested block.
 
 ## License

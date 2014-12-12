@@ -41,7 +41,7 @@
   var debugOuterStyle = {
     minHeight: '9px',
     outline: '1px solid #888',
-    paddingTop: '10px'
+    top: '10px'
   };
 
   var debugInnerStyle = {
@@ -54,7 +54,7 @@
     outline: '1px solid #888'
   };
 
-  function injectDebug($el, blockName, elementNames, mods) {
+  function injectDebug($el, blockName, elemName, mods) {
     var pos = $el.css('position');
     mods = mods || {};
     mods = (function(mods) {
@@ -64,8 +64,8 @@
           return mod + ':' + mods[mod];
         }).join(',');
     })(mods);
-    var className = 'ng-bem-debug-' + (elementNames ? 'element' : 'block');
-    var text = (elementNames ? '(' + elementNames.join(',') + ')' : '[' + blockName + ']')
+    var className = 'ng-bem-debug-' + (elemName ? 'element' : 'block');
+    var text = (elemName ? '(' + elemName + ')' : '[' + blockName + ']')
       + (mods ? '{' + mods + '}' : '');
 
     var $debug = angular.element($el.children()[$el.children().length - 1]);
@@ -128,10 +128,28 @@
     }
   }
 
+  function generateClass(blockName, elemName, modName, modValue) {
+    var cls = blockName;
+
+    if (elemName != null) {
+      cls += '__' + elemName;
+    }
+
+    if (modName != null) {
+      cls += '_' + modName;
+      if ((typeof(modValue) !== 'boolean' && modValue != null)) {
+        cls += '_' + modValue;
+      }
+    }
+
+    return cls;
+  }
+
   var module = angular.module('tenphi.bem', []);
 
   module.provider('bemConfig', function() {
-    var debug = false;
+    var _this = this,
+      debug = false;
 
     this.debug = function(bool) {
       debug = !!bool;
@@ -141,9 +159,14 @@
 
     this.debugOuterStyle = debugOuterStyle;
 
+    this.generateClass = generateClass;
+
     this.$get = function() {
       return {
-        debug: debug
+        debug: debug,
+        generateClass: _this.generateClass,
+        debugInnerStyle: _this.debugInnerStyle,
+        debugOuterStyle: _this.debugOuterStyle
       }
     };
   });
@@ -151,33 +174,22 @@
   module.directive('block', function(bemConfig) {
     var debug = bemConfig.debug;
     return {
-      restrict: 'EA',
+      restrict: 'A',
       require: 'block',
       controller: function BlockCtrl($scope, $element, $attrs) {
-        this.$el = $element;
-        var $tmp = $scope;
-        while($tmp) {
-          if ($tmp.blockController) {
-            this.parent = $tmp.blockController;
-          }
-          $tmp = $tmp.$parent;
-        }
-
-        $scope.blockController = this;
-
         if (!$attrs.block) return;
 
         var blockName = $attrs.block;
-        this.name = blockName;
-        this.$el = $element;
+        this.blockName = blockName;
+        this.block = true;
 
         $element[0].removeAttribute('block');
-        addClass($element, blockName);
+        addClass($element, bemConfig.generateClass(blockName));
       },
       link: {
         pre: function(scope, $el, attrs, ctrl) {
           if (debug) {
-            ctrl.debugElement = injectDebug($el, ctrl.name);
+            ctrl.debugElement = injectDebug($el, ctrl.blockName);
           }
         },
         post: function(scope, $el, attrs, ctrl) {
@@ -189,43 +201,30 @@
     }
   });
 
-  module.directive('element', function(bemConfig) {
+  module.directive('elem', function(bemConfig) {
     var debug = bemConfig.debug;
     return {
       restrict: 'EA',
-      require: ['^block', 'element'],
-      controller: function ElementCtrl($element) {
+      require: ['^^block', 'elem'],
+      controller: function ElemCtrl($element) {
         this.$el = $element;
       },
       link: {
         pre: function(scope, $el, attrs, ctrls) {
           var blockCtrl = ctrls[0];
-          var elementCtrl = ctrls[1];
+          var elemCtrl = ctrls[1];
 
-          if (elementCtrl && blockCtrl.$el[0] === elementCtrl.$el[0]) {
-            blockCtrl = blockCtrl.parent;
-            if (!blockCtrl) {
-              throw new Error('angular-bem: element doesn\'t have parent block');
-            }
-          }
+          if (!attrs.elem) return;
 
-          elementCtrl.blockName = blockCtrl.name;
-          elementCtrl.names = [];
+          elemCtrl.blockName = blockCtrl.blockName;
+          elemCtrl.elemName = attrs.elem;
+          elemCtrl.elem = true;
 
-          if (!attrs.element) return;
-
-          // handle multiple elements attached to one node
-          elementCtrl.names = attrs.element.split(/\s/g);
-
-          elementCtrl.names.forEach(function(name) {
-            removeClass($el, name);
-            addClass($el, blockCtrl.name + '__' + name);
-          });
-
-          $el[0].removeAttribute('element');
+          $el[0].removeAttribute('elem');
+          addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
 
           if (debug) {
-            this.debugElement = injectDebug($el, blockCtrl.name, elementCtrl.names);
+            this.debugElement = injectDebug($el, blockCtrl.blockName, elemCtrl.elemName);
           }
         },
         post: function(scope, $el, attrs, ctrls) {
@@ -235,17 +234,21 @@
     }
   });
 
-  module.directive('blockMod', function() {
+  module.directive('mods', function(bemConfig) {
     return {
       restrict: 'A',
-      require: 'block',
-      link: function(scope, el, attrs, ctrl) {
+      require: ['?block', '?elem'],
+      link: function(scope, el, attrs, ctrls) {
         var modMap = {};
-        var blockName = ctrl.name;
+        var ctrl = ctrls[0] || ctrls[1];
+
+        if (!ctrl) {
+          return;
+        }
 
         function setMod() {
           if (!modMap) {
-            removeClassesWithPrefix(el, blockName + '_');
+            removeClassesWithPrefix(el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName), '');
             return;
           }
 
@@ -257,80 +260,25 @@
             var modValue = modMap[mod];
             var modName = formatName(mod);
 
-            var classPrefix = blockName + '_';
-            var className = classPrefix
-              + modName
-              + (typeof(modValue) === 'string' ? '_' + modValue : '');
+            if (!modName) continue;
 
-            removeClassesWithPrefix(el, classPrefix + modName, modValue ? className : null);
+            var className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName || '', modValue);
+
+            removeClassesWithPrefix(el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName, ''), modValue ? className : null);
             if (modValue) {
               addClass(el, className);
+            } else {
+              removeClass(el, className);
             }
           }
         }
 
         scope.$watch(function() {
-          modMap = scope.$eval(attrs.blockMod);
+          modMap = scope.$eval(attrs.mods);
           setMod();
         }, true);
 
-        el[0].removeAttribute('block-mod');
-      }
-    }
-  });
-
-  module.directive('elementMod', function(bemConfig) {
-    var debug = bemConfig.debug;
-    return {
-      restrict: 'A',
-      require: 'element',
-      link: function(scope, $el, attrs, ctrl) {
-        var modMap = {};
-
-        function setMod() {
-          var blockName = ctrl.blockName;
-          var elementNames = ctrl.names || [];
-
-          if (!modMap) {
-            elementNames.forEach(function(elementName) {
-              removeClassesWithPrefix($el, blockName + '__' + elementName + '_');
-            });
-            return;
-          }
-
-          modMap = handleModMap(modMap);
-          var mods = Object.keys(modMap);
-
-          for (var i = 0, len = mods.length; i < len; i++) {
-            var mod = mods[i];
-            var modValue = modMap[mod];
-            var modName = formatName(mod);
-
-            elementNames.forEach(function(elementName) {
-              var classPrefix = blockName
-                + '__' + elementName
-                + '_' + modName;
-              var className = classPrefix
-                + (typeof(modValue) === 'string' ? '_' + modValue : '');
-
-              removeClassesWithPrefix($el, classPrefix, modValue ? className : null);
-              if (modValue) {
-                addClass($el, className);
-              }
-            });
-          }
-
-          if (debug) {
-            this.debugElement = injectDebug($el, blockName, elementNames, modMap);
-          }
-        }
-
-        scope.$watch(function() {
-          modMap = scope.$eval(attrs.elementMod);
-          setMod();
-        }, true);
-
-        $el[0].removeAttribute('element-mod');
+        el[0].removeAttribute('mods');
       }
     }
   });
