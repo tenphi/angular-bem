@@ -183,7 +183,7 @@
         this.blockName = blockName;
         this.block = true;
 
-        $element[0].removeAttribute('block');
+        $element[0].setAttribute('block', '');
         addClass($element, bemConfig.generateClass(blockName));
       },
       link: {
@@ -220,7 +220,7 @@
           elemCtrl.elemName = attrs.elem;
           elemCtrl.elem = true;
 
-          $el[0].removeAttribute('elem');
+          $el[0].setAttribute('elem', '');
           addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
 
           if (debug) {
