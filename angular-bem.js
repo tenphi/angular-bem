@@ -4,24 +4,6 @@
     throw new Error('angular-bem: angular required');
   }
 
-  function hashCode(str) { // java String#hashCode
-    var hash = 0;
-    for (var i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return hash;
-  }
-
-  function intToRGB(i){
-    return ('00' + ((i>>16)&0xFF/1.5).toString(16)).slice(-2) +
-    ('00' + ((i>>8)&0xFF/1.5).toString(16)).slice(-2) +
-    ('00' + (i&0xFF/1.5).toString(16)).slice(-2);
-  }
-
-  function colorByString(str) {
-    return '#' + intToRGB(hashCode(str));
-  }
-
   // modName -> mod_name
   function formatName(s) {
     return s.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase();});
@@ -37,57 +19,6 @@
       return modMap;
     }
   }
-
-  var debugOuterStyle = {
-    minHeight: '9px',
-    outline: '1px solid #888',
-    top: '10px'
-  };
-
-  var debugInnerStyle = {
-    fontFamily: 'monospace',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    fontSize: '8px',
-    color: 'white',
-    outline: '1px solid #888'
-  };
-
-  function injectDebug($el, blockName, elemName, mods) {
-    var pos = $el.css('position');
-    mods = mods || {};
-    mods = (function(mods) {
-      return Object.keys(mods)
-        .filter(function(mod) {return !!mods[mod];})
-        .map(function(mod) {
-          return mod + ':' + mods[mod];
-        }).join(',');
-    })(mods);
-    var className = 'ng-bem-debug-' + (elemName ? 'element' : 'block');
-    var text = (elemName ? '(' + elemName + ')' : '[' + blockName + ']')
-      + (mods ? '{' + mods + '}' : '');
-
-    var $debug = angular.element($el.children()[$el.children().length - 1]);
-    if (!$debug.length || !~getClasses($debug).indexOf(className)) {
-      $debug = angular.element('<div>').addClass(className);
-    }
-
-    $debug.text(text);
-
-    if (pos !== 'absolute' && pos !== 'relative') {
-      $el.css('position', 'relative');
-    }
-
-    $el.css(debugOuterStyle);
-
-    $debug.css(debugInnerStyle);
-
-    $debug.css('backgroundColor', colorByString(blockName));
-
-    return $debug;
-  }
-
   var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
 
   if (classListSupport) {
@@ -148,31 +79,18 @@
   var module = angular.module('tenphi.bem', []);
 
   module.provider('bemConfig', function() {
-    var _this = this,
-      debug = false;
-
-    this.debug = function(bool) {
-      debug = !!bool;
-    };
-
-    this.debugInnerStyle = debugInnerStyle;
-
-    this.debugOuterStyle = debugOuterStyle;
+    var _this = this;
 
     this.generateClass = generateClass;
 
     this.$get = function() {
       return {
-        debug: debug,
-        generateClass: _this.generateClass,
-        debugInnerStyle: _this.debugInnerStyle,
-        debugOuterStyle: _this.debugOuterStyle
+        generateClass: _this.generateClass
       }
     };
   });
 
   module.directive('block', function(bemConfig) {
-    var debug = bemConfig.debug;
     return {
       restrict: 'A',
       require: 'block',
@@ -185,27 +103,14 @@
 
         $element[0].setAttribute('block', '');
         addClass($element, bemConfig.generateClass(blockName));
-      },
-      link: {
-        pre: function(scope, $el, attrs, ctrl) {
-          if (debug) {
-            ctrl.debugElement = injectDebug($el, ctrl.blockName);
-          }
-        },
-        post: function(scope, $el, attrs, ctrl) {
-          if (debug) {
-            $el.append(ctrl.debugElement);
-          }
-        }
       }
     }
   });
 
   module.directive('elem', function(bemConfig) {
-    var debug = bemConfig.debug;
     return {
       restrict: 'EA',
-      require: ['^^block', 'elem'],
+      require: ['^block', 'elem'],
       controller: function ElemCtrl($element) {
         this.$el = $element;
       },
@@ -222,13 +127,6 @@
 
           $el[0].setAttribute('elem', '');
           addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
-
-          if (debug) {
-            this.debugElement = injectDebug($el, blockCtrl.blockName, elemCtrl.elemName);
-          }
-        },
-        post: function(scope, $el, attrs, ctrls) {
-          $el.append(this.debugElement);
         }
       }
     }
