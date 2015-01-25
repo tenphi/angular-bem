@@ -60,7 +60,7 @@ app.config(function(bemConfigProvider) {
 Now output of previous example will look like:
 
 ```html
-<div block class="my-block -mod-name-value">
+<div block class="my-block ~mod-name-value">
   <div elem class="my-block--my-element ~mod-name-value ~second-mod-name"></div>
 </div>
 ```
