@@ -19,8 +19,8 @@ Create a simple markup:
 
 ```html
 <body ng-app="app">
-  <div block="my-block" mods="{ modName: 'value' }">
-    <div elem="my-element" mods="{ modName: 'value', secondModName: true }"></div>
+  <div block="my-block" mod="{ modName: 'value' }">
+    <div elem="my-element" mod="{ modName: 'value', secondModName: true }"></div>
   </div>
 </body>
 ```
