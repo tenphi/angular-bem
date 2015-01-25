@@ -132,7 +132,7 @@
     }
   });
 
-  module.directive('mods', function(bemConfig) {
+  module.directive('mod', function(bemConfig) {
     return {
       restrict: 'A',
       require: ['?block', '?elem'],
@@ -176,7 +176,7 @@
           setMod();
         }, true);
 
-        el[0].removeAttribute('mods');
+        el[0].removeAttribute('mod');
       }
     }
   });
