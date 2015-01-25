@@ -46,7 +46,7 @@ app.config(function(bemConfigProvider) {
     }
 
     if (modName != null) {
-      cls = '-' + modName;
+      cls = '~' + modName;
       if ((typeof(modValue) !== 'boolean' && modValue != null)) {
         cls += '-' + modValue;
       }
@@ -61,7 +61,7 @@ Now output of previous example will look like:
 
 ```html
 <div block class="my-block -mod-name-value">
-  <div elem class="my-block--my-element -mod-name-value -second-mod-name"></div>
+  <div elem class="my-block--my-element ~mod-name-value ~second-mod-name"></div>
 </div>
 ```
 
