@@ -137,8 +137,10 @@
       restrict: 'A',
       require: ['?block', '?elem'],
       link: function(scope, el, attrs, ctrls) {
-        var modMap = {};
-        var ctrl = ctrls[0] || ctrls[1];
+        var modMap = {},
+          prevModMap = {},
+          ctrl = ctrls[0] || ctrls[1],
+          i, len, mod, mods, modValue, modName, className;
 
         if (!ctrl) {
           return;
@@ -150,17 +152,32 @@
             return;
           }
 
-          modMap = handleModMap(modMap);
-          var mods = Object.keys(modMap);
+          if (typeof(modMap) === 'string') {
+            mods = Object.keys(prevModMap);
+            for (i = 0, len = mods.length; i < len; i++) {
+              mod = mods[i];
+              modValue = prevModMap[mod];
+              modName = formatName(mod);
 
-          for (var i = 0, len = mods.length; i < len; i++) {
-            var mod = mods[i];
-            var modValue = modMap[mod];
-            var modName = formatName(mod);
+              if (!modName) continue;
+
+              className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName);
+
+              removeClassesWithPrefix(el, className);
+            }
+          }
+
+          modMap = handleModMap(modMap);
+          mods = Object.keys(modMap);
+
+          for (i = 0, len = mods.length; i < len; i++) {
+            mod = mods[i];
+            modValue = modMap[mod];
+            modName = formatName(mod);
 
             if (!modName) continue;
 
-            var className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName || '', modValue);
+            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName || '', modValue);
 
             removeClassesWithPrefix(el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName, ''), modValue ? className : null);
             if (modValue) {
@@ -172,6 +189,7 @@
         }
 
         scope.$watch(function() {
+          prevModMap = modMap;
           modMap = scope.$eval(attrs.mod);
           setMod();
         }, true);
