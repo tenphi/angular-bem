@@ -172,7 +172,7 @@
         }
 
         scope.$watch(function() {
-          modMap = scope.$eval(attrs.mods);
+          modMap = scope.$eval(attrs.mod);
           setMod();
         }, true);
 
