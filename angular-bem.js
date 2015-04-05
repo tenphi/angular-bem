@@ -90,11 +90,11 @@
     };
   });
 
-  module.directive('block', function(bemConfig) {
+  module.directive('block', ['bemConfig', function(bemConfig) {
     return {
       restrict: 'A',
       require: 'block',
-      controller: function BlockCtrl($scope, $element, $attrs) {
+      controller: ['$scope', '$element', '$attrs', function BlockCtrl($scope, $element, $attrs) {
         if (!$attrs.block) return;
 
         var blockName = $attrs.block;
@@ -103,17 +103,17 @@
 
         $element[0].setAttribute('block', '');
         addClass($element, bemConfig.generateClass(blockName));
-      }
+      }]
     }
-  });
+  }]);
 
-  module.directive('elem', function(bemConfig) {
+  module.directive('elem', ['bemConfig', function(bemConfig) {
     return {
       restrict: 'EA',
       require: ['^block', 'elem'],
-      controller: function ElemCtrl($element) {
+      controller: ['$element', function ElemCtrl($element) {
         this.$el = $element;
-      },
+      }],
       link: {
         pre: function(scope, $el, attrs, ctrls) {
           var blockCtrl = ctrls[0];
@@ -130,9 +130,9 @@
         }
       }
     }
-  });
+  }]);
 
-  module.directive('mod', function(bemConfig) {
+  module.directive('mod', ['bemConfig', function(bemConfig) {
     return {
       restrict: 'A',
       require: ['?block', '?elem'],
@@ -197,6 +197,6 @@
         el[0].removeAttribute('mod');
       }
     }
-  });
+  }]);
 
 })(window.angular);
