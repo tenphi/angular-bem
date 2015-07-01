@@ -10,14 +10,26 @@
   }
 
   function handleModMap(modMap) {
-    var tmp;
-    if (typeof(modMap) === 'string') {
+    var tmp, i;
+    if (Array.isArray(modMap)) {
       tmp = {};
-      tmp[modMap] = true;
-      return tmp;
+      for (var i = 0; i < modMap.length; i++) {
+        if (modMap[i]) {
+          tmp[modMap[i]] = true;
+        }
+      }
+    } else if (typeof(modMap) === 'string') {
+      tmp = {};
+      modMap = modMap.split(/\s+/)
+      for (var i = 0; i < modMap.length; i++) {
+        if (modMap[i]) {
+          tmp[modMap[i]] = true;
+        }
+      }
     } else {
-      return modMap;
+      tmp = modMap;
     }
+    return tmp;
   }
   var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
 
@@ -67,9 +79,9 @@
     }
 
     if (modName != null) {
-      cls += '_' + modName;
+      cls += '--' + modName;
       if ((typeof(modValue) !== 'boolean' && modValue != null)) {
-        cls += '_' + modValue;
+        cls += '-' + modValue;
       }
     }
 
@@ -101,7 +113,7 @@
         this.blockName = blockName;
         this.block = true;
 
-        $element[0].setAttribute('block', '');
+        $element[0].removeAttribute('block');
         addClass($element, bemConfig.generateClass(blockName));
       }]
     }
@@ -125,7 +137,7 @@
           elemCtrl.elemName = attrs.elem;
           elemCtrl.elem = true;
 
-          $el[0].setAttribute('elem', '');
+          $element[0].removeAttribute('elem');
           addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
         }
       }
@@ -136,7 +148,7 @@
     return {
       restrict: 'A',
       require: ['?block', '?elem'],
-      link: function(scope, el, attrs, ctrls) {
+      link: function(scope, $el, attrs, ctrls) {
         var modMap = {},
           prevModMap = {},
           ctrl = ctrls[0] || ctrls[1],
@@ -148,7 +160,7 @@
 
         function setMod() {
           if (!modMap) {
-            removeClassesWithPrefix(el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName), '');
+            removeClassesWithPrefix($el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName), '');
             return;
           }
 
@@ -163,7 +175,7 @@
 
               className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName);
 
-              removeClassesWithPrefix(el, className);
+              removeClassesWithPrefix($el, className);
             }
           }
 
@@ -179,11 +191,11 @@
 
             className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName || '', modValue);
 
-            removeClassesWithPrefix(el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName, ''), modValue ? className : null);
+            removeClassesWithPrefix($el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName, ''), modValue ? className : null);
             if (modValue) {
-              addClass(el, className);
+              addClass($el, className);
             } else {
-              removeClass(el, className);
+              removeClass($el, className);
             }
           }
         }
@@ -194,7 +206,7 @@
           setMod();
         }, true);
 
-        el[0].removeAttribute('mod');
+        $el[0].removeAttribute('mod');
       }
     }
   }]);

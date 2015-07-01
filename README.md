@@ -2,10 +2,22 @@
 
 A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [Angular](https://angularjs.org)-based applications.
 
+## Changelog
+
+### 0.3.0
+* Default syntax changed. ```block__elem--mod-value```
+* ```mod``` can now accept array and string with ```space``` delimiter
+
 ## Install
 
 ```bash
 $ bower install angular-bem
+```
+
+or
+
+```bash
+$ npm install angular-bem
 ```
 
 ## Example
@@ -28,8 +40,8 @@ Create a simple markup:
 It will be transformed into following markup:
 
 ```html
-<div block class="my-block my-block_mod-name_value">
-  <div elem class="my-block__my-element my-block__my-element_mod-name_value my-block__my-element_second-mod-name"></div>
+<div class="my-block my-block--mod-name_value">
+  <div class="my-block__my-element my-block__my-element--mod-name_value my-block__my-element--second-mod-name"></div>
 </div>
 ```
 
@@ -60,8 +72,8 @@ app.config(function(bemConfigProvider) {
 Now output of previous example will look like:
 
 ```html
-<div block class="my-block ~mod-name-value">
-  <div elem class="my-block--my-element ~mod-name-value ~second-mod-name"></div>
+<div class="my-block ~mod-name-value">
+  <div class="my-block--my-element ~mod-name-value ~second-mod-name"></div>
 </div>
 ```
 
