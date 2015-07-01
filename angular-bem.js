@@ -137,7 +137,7 @@
           elemCtrl.elemName = attrs.elem;
           elemCtrl.elem = true;
 
-          $element[0].removeAttribute('elem');
+          $el[0].removeAttribute('elem');
           addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
         }
       }
