@@ -6,6 +6,9 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 
 ## Changelog
 
+### 0.4.0
+* Improved performance.
+
 ### 0.3.0
 * Default syntax changed. ```block__elem--mod-value```
 * ```mod``` can now accept array and string with ```space``` delimiter
