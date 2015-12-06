@@ -1,7 +1,12 @@
 (function(angular) {
+  'use strict';
 
   if (!angular) {
     throw new Error('angular-bem: angular required');
+  }
+
+  if (angular.version.major !== 1 || angular.version.minor < 4) {
+    throw new Error('angular-bem: unsupported version of angular. use >= 1.4.0');
   }
 
   // modName -> mod_name
@@ -80,7 +85,7 @@
 
     if (modName != null) {
       cls += '--' + modName;
-      if ((typeof(modValue) !== 'boolean' && modValue != null)) {
+      if (typeof(modValue) !== 'boolean' && modValue != null) {
         cls += '-' + modValue;
       }
     }
@@ -106,15 +111,16 @@
     return {
       restrict: 'A',
       require: 'block',
+      scope: false,
       controller: ['$scope', '$element', '$attrs', function BlockCtrl($scope, $element, $attrs) {
-        if (!$attrs.block) return;
+        this.blockName = $attrs.block;
 
-        var blockName = $attrs.block;
-        this.blockName = blockName;
+        if (!this.blockName) return;
+
         this.block = true;
 
         $element[0].removeAttribute('block');
-        addClass($element, bemConfig.generateClass(blockName));
+        addClass($element, bemConfig.generateClass(this.blockName));
       }]
     }
   }]);
@@ -123,18 +129,18 @@
     return {
       restrict: 'EA',
       require: ['^block', 'elem'],
-      controller: ['$element', function ElemCtrl($element) {
-        this.$el = $element;
-      }],
+      scope: false,
+      controller: function ElemCtrl() {},
       link: {
         pre: function(scope, $el, attrs, ctrls) {
           var blockCtrl = ctrls[0];
           var elemCtrl = ctrls[1];
 
-          if (!attrs.elem) return;
+          elemCtrl.elemName = attrs.elem;
+
+          if (!elemCtrl.elemName) return;
 
           elemCtrl.blockName = blockCtrl.blockName;
-          elemCtrl.elemName = attrs.elem;
           elemCtrl.elem = true;
 
           $el[0].removeAttribute('elem');
@@ -148,17 +154,16 @@
     return {
       restrict: 'A',
       require: ['?block', '?elem'],
+      scope: false,
       link: function(scope, $el, attrs, ctrls) {
-        var modMap = {},
-          prevModMap = {},
-          ctrl = ctrls[0] || ctrls[1],
+        var ctrl = ctrls[0] || ctrls[1],
           i, len, mod, mods, modValue, modName, className;
 
         if (!ctrl) {
           return;
         }
 
-        function setMod() {
+        function setMod(modMap, prevModMap) {
           if (!modMap) {
             removeClassesWithPrefix($el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName), '');
             return;
@@ -201,10 +206,8 @@
         }
 
         scope.$watch(function() {
-          prevModMap = modMap;
-          modMap = scope.$eval(attrs.mod);
-          setMod();
-        }, true);
+          return scope.$eval(attrs.mod);
+        }, setMod, true);
 
         $el[0].removeAttribute('mod');
       }
@@ -212,3 +215,8 @@
   }]);
 
 })(window.angular);
+
+/* commonjs package manager support (eg componentjs) */
+if (typeof module !== "undefined" && typeof exports !== "undefined" && module.exports === exports){
+  module.exports = 'tenphi.bem';
+}

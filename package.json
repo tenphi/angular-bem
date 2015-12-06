@@ -1,6 +1,6 @@
 {
   "name": "angular-bem",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A set of Angular-directives to simplify your workflow with BEM methodology",
   "main": "angular-bem.js",
   "scripts": {
