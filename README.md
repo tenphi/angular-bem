@@ -1,6 +1,6 @@
 # angular-bem
 
-[![Join the chat at https://gitter.im/tenphi/angular-bem](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tenphi/angular-bem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/tenphi/angular-bem.svg?branch=master)](https://travis-ci.org/tenphi/angular-bem) [![Join the chat at https://gitter.im/tenphi/angular-bem](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tenphi/angular-bem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [Angular](https://angularjs.org)-based applications.
 
