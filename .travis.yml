@@ -1,8 +1,5 @@
 language: node_js
 node_js:
-  - "iojs"
-  - "0.12"
-  - "4"
   - "5"
 
 # Make sure we have new NPM.
@@ -11,10 +8,6 @@ before_install:
   - npm install -g npm
   - npm config set loglevel warn
 
-before_script:
-  - npm install -g karma jasmine karma-jasmine karma-phantomjs-launcher karma-spec-reporter phantomjs
-  - npm install angular angular-mocks
-
 script:
-  - karma start tests.js
+  - node_modules/karma/bin/karma start tests.js
   
