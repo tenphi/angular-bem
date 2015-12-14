@@ -9,5 +9,4 @@ before_install:
   - npm config set loglevel warn
 
 script:
-  - node_modules/karma/bin/karma start tests.js
-  
+  - node_modules/karma/bin/karma start karma.conf.js
