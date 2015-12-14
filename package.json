@@ -1,6 +1,6 @@
 {
   "name": "angular-bem",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A set of Angular-directives to simplify your workflow with BEM methodology",
   "main": "angular-bem.js",
   "scripts": {
@@ -21,5 +21,15 @@
   "bugs": {
     "url": "https://github.com/tenphi/angular-bem/issues"
   },
-  "homepage": "https://github.com/tenphi/angular-bem#readme"
+  "homepage": "https://github.com/tenphi/angular-bem#readme",
+  "devDependencies": {
+    "angular": "^1.2.29",
+    "angular-mocks": "^1.2.29",
+    "jasmine": "^2.4.1",
+    "karma": "^0.13.15",
+    "karma-jasmine": "^0.3.6",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "karma-spec-reporter": "0.0.23",
+    "phantomjs": "^1.9.19"
+  }
 }

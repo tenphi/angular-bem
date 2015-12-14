@@ -5,7 +5,7 @@
     throw new Error('angular-bem: angular required');
   }
 
-  if (angular.version.major !== 1 || angular.version.minor < 4) {
+  if (angular.version.major !== 1 || angular.version.minor < 2) {
     throw new Error('angular-bem: unsupported version of angular. use >= 1.4.0');
   }
 
@@ -25,10 +25,12 @@
       }
     } else if (typeof(modMap) === 'string') {
       tmp = {};
-      modMap = modMap.split(/\s+/)
-      for (var i = 0; i < modMap.length; i++) {
-        if (modMap[i]) {
-          tmp[modMap[i]] = true;
+      if (modMap) {
+        modMap = modMap.split(/\s+/)
+        for (var i = 0; i < modMap.length; i++) {
+          if (modMap[i]) {
+            tmp[modMap[i]] = true;
+          }
         }
       }
     } else {
@@ -157,7 +159,7 @@
       scope: false,
       link: function(scope, $el, attrs, ctrls) {
         var ctrl = ctrls[0] || ctrls[1],
-          i, len, mod, mods, modValue, modName, className;
+          i, len, mod, mods, prevMods, value, oldValue, name, className;
 
         if (!ctrl) {
           return;
@@ -165,51 +167,62 @@
 
         function setMod(modMap, prevModMap) {
           if (!modMap) {
-            removeClassesWithPrefix($el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName), '');
+            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName);
+            removeClassesWithPrefix($el, className, className);
             return;
           }
 
-          if (typeof(modMap) === 'string') {
-            mods = Object.keys(prevModMap);
-            for (i = 0, len = mods.length; i < len; i++) {
-              mod = mods[i];
-              modValue = prevModMap[mod];
-              modName = formatName(mod);
+          modMap = handleModMap(modMap || '');
+          prevModMap = handleModMap(prevModMap || '');
 
-              if (!modName) continue;
+          mods = Object.keys(modMap);
+          prevMods = Object.keys(prevModMap);
 
-              className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName);
+          for (i = 0, len = prevMods.length; i < len; i++) {
+            mod = prevMods[i];
+            value = modMap[mod];
+            oldValue = prevModMap[mod];
 
+            if (!modMap[mod] || value !== oldValue || (oldValue && !value)) {
+              name = formatName(mod);
+              className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, name);
               removeClassesWithPrefix($el, className);
             }
           }
 
-          modMap = handleModMap(modMap);
-          mods = Object.keys(modMap);
-
           for (i = 0, len = mods.length; i < len; i++) {
             mod = mods[i];
-            modValue = modMap[mod];
-            modName = formatName(mod);
+            value = modMap[mod];
+            oldValue = prevModMap[mod];
+            name = formatName(mod);
 
-            if (!modName) continue;
+            if (!name) continue;
 
-            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName || '', modValue);
+            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, name || '', value);
 
-            removeClassesWithPrefix($el, bemConfig.generateClass(ctrl.blockName, ctrl.elemName, modName, ''), modValue ? className : null);
-            if (modValue) {
+            if (value !== oldValue && value) {
               addClass($el, className);
-            } else {
-              removeClass($el, className);
             }
           }
         }
 
-        scope.$watch(function() {
-          return scope.$eval(attrs.mod);
-        }, setMod, true);
+        var modString = attrs.mod;
+        var watch = true;
+
+        if (modString.slice(0, 2) === '::') {
+          modString === modString.slice(2);
+          watch = false;
+        }
+
+        if (watch) {
+          scope.$watch(function() {
+            return scope.$eval(modString);
+          }, setMod, true);
+        }
 
         $el[0].removeAttribute('mod');
+
+        setMod(scope.$eval(modString));
       }
     }
   }]);
