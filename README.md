@@ -6,6 +6,11 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 
 ## Changelog
 
+### 0.4.1
+* Add test coverage.
+* Add one-time binding syntax. (it looks like angular 1.3 one-time binding syntax but it's not the same)
+* Fix bugs
+
 ### 0.4.0
 * Improved performance.
 
@@ -49,6 +54,20 @@ It will be transformed into following markup:
   <div class="my-block__my-element my-block__my-element--mod-name_value my-block__my-element--second-mod-name"></div>
 </div>
 ```
+
+## One-time binding syntax
+
+To activate it include double colon "::" at the beginning of **mod** attribute.
+
+```html
+<body ng-app="app">
+  <div block="my-block" mod="::{ modName: 'value' }"></div>
+</body>
+```
+
+Works for `angular>=1.2.0`.
+
+Do not confuse with angular 1.3 one-time binding syntax! It looks similar but it is not the same. 
 
 ## Customization
 Create your own BEM-like syntax:
