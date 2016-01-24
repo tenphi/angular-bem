@@ -1,6 +1,10 @@
 (function(angular) {
   'use strict';
 
+  function log() {
+    //console.log.apply(console, Array.prototype.slice.call(arguments));
+  }
+
   if (!angular) {
     throw new Error('angular-bem: angular required');
   }
@@ -10,8 +14,18 @@
   }
 
   // modName -> mod_name
-  function formatName(s) {
-    return s.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase();});
+  function toKebabCase(str) {
+    return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
+  }
+
+  function copyObject(obj) {
+    var newObj = {};
+
+    for (var key in obj) {
+      newObj[key] = obj[key];
+    }
+
+    return newObj;
   }
 
   function handleModMap(modMap) {
@@ -79,13 +93,17 @@
   }
 
   function generateClass(blockName, elemName, modName, modValue) {
+    blockName = toKebabCase(blockName);
+    elemName = toKebabCase(elemName);
+    modName = toKebabCase(modName);
+
     var cls = blockName;
 
-    if (elemName != null) {
+    if (elemName) {
       cls += '__' + elemName;
     }
 
-    if (modName != null) {
+    if (modName) {
       cls += '--' + modName;
       if (typeof(modValue) !== 'boolean' && modValue != null) {
         cls += '-' + modValue;
@@ -93,6 +111,86 @@
     }
 
     return cls;
+  }
+
+  function parseMods(mods) {
+    if (typeof mods === 'string') {
+      mods = mods.split(/\s+/);
+
+      if (mods[0] === '') {
+        mods = [];
+      }
+    }
+
+    if (Array.isArray(mods)) {
+      var arr = mods;
+
+      mods = {};
+
+      arr.forEach(function(key) {
+        mods[key] = true;
+      });
+    } else if (typeof mods !== 'object') {
+      return {};
+    }
+
+    for (var key in mods) {
+      if (!mods[key]) {
+        delete mods[key];
+      }
+    };
+
+    return mods;
+  }
+
+  function setMods($el, blockName, elemName, mods, oldMods, classGen) {
+    log('mods', mods, oldMods, mods === oldMods);
+    Object.keys(mods).forEach(function(key) {
+      if (oldMods[key]) {
+        if (oldMods[key] !== mods[key]) {
+          removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+          addClass($el, classGen(blockName, elemName, key, mods[key]));
+          log('change', classGen(blockName, elemName, key, oldMods[key]), ' -> ', classGen(blockName, elemName, key, mods[key]));
+        }
+      } else if (mods[key]) {
+        addClass($el, classGen(blockName, elemName, key, mods[key]));
+        log('add', classGen(blockName, elemName, key, mods[key]));
+      }
+    });
+
+    Object.keys(oldMods).forEach(function(key) {
+      if (!(key in mods)) {
+        if (oldMods[key] && !(key in mods)) {
+          removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+          log('remove', classGen(blockName, elemName, key, oldMods[key]));
+        }
+      }
+    });
+  }
+
+  function initMod($el, $scope, blockName, elemName, modAttr, classGen) {
+    var watch = true, mods, oldMods = {};
+
+    if (modAttr.slice(0, 2) === '::') {
+      modAttr === modAttr.slice(2);
+      watch = false;
+    }
+
+    if (watch) {
+      $scope.$watch(function() {
+        return $scope.$eval(modAttr);
+      }, function(mods) {
+        mods = parseMods(mods);
+        setMods($el, blockName, elemName, mods, oldMods, classGen);
+
+        oldMods = copyObject(mods);
+      }, true);
+    }
+
+    mods = parseMods($scope.$eval(modAttr));
+    setMods($el, blockName, elemName, mods, oldMods, classGen);
+
+    oldMods = copyObject(mods);
   }
 
   var module = angular.module('tenphi.bem', []);
@@ -103,9 +201,7 @@
     this.generateClass = generateClass;
 
     this.$get = function() {
-      return {
-        generateClass: _this.generateClass
-      }
+      return { generateClass: _this.generateClass };
     };
   });
 
@@ -115,14 +211,19 @@
       require: 'block',
       scope: false,
       controller: ['$scope', '$element', '$attrs', function BlockCtrl($scope, $element, $attrs) {
-        this.blockName = $attrs.block;
+        var blockName = this.name = $attrs.block;
 
-        if (!this.blockName) return;
+        if (!this.name) return;
 
         this.block = true;
 
         $element[0].removeAttribute('block');
-        addClass($element, bemConfig.generateClass(this.blockName));
+        addClass($element, bemConfig.generateClass(this.name));
+
+        if ('mod' in $attrs) {
+          initMod($element, $scope, blockName, null, $attrs.mod, bemConfig.generateClass);
+          $element[0].removeAttribute('mod');
+        }
       }]
     }
   }]);
@@ -134,95 +235,26 @@
       scope: false,
       controller: function ElemCtrl() {},
       link: {
-        pre: function(scope, $el, attrs, ctrls) {
+        pre: function($scope, $element, $attrs, ctrls) {
           var blockCtrl = ctrls[0];
           var elemCtrl = ctrls[1];
 
-          elemCtrl.elemName = attrs.elem;
+          var name = elemCtrl.name = $attrs.elem;
+          var blockName = blockCtrl.name;
 
-          if (!elemCtrl.elemName) return;
+          if (!elemCtrl.name) return;
 
-          elemCtrl.blockName = blockCtrl.blockName;
+          elemCtrl.blockName = blockCtrl.name;
           elemCtrl.elem = true;
 
-          $el[0].removeAttribute('elem');
-          addClass($el, bemConfig.generateClass(elemCtrl.blockName, elemCtrl.elemName));
-        }
-      }
-    }
-  }]);
+          $element[0].removeAttribute('elem');
+          addClass($element, bemConfig.generateClass(blockName, name));
 
-  module.directive('mod', ['bemConfig', function(bemConfig) {
-    return {
-      restrict: 'A',
-      require: ['?block', '?elem'],
-      scope: false,
-      link: function(scope, $el, attrs, ctrls) {
-        var ctrl = ctrls[0] || ctrls[1],
-          i, len, mod, mods, prevMods, value, oldValue, name, className;
-
-        if (!ctrl) {
-          return;
-        }
-
-        function setMod(modMap, prevModMap) {
-          if (!modMap) {
-            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName);
-            removeClassesWithPrefix($el, className, className);
-            return;
-          }
-
-          modMap = handleModMap(modMap || '');
-          prevModMap = handleModMap(prevModMap || '');
-
-          mods = Object.keys(modMap);
-          prevMods = Object.keys(prevModMap);
-
-          for (i = 0, len = prevMods.length; i < len; i++) {
-            mod = prevMods[i];
-            value = modMap[mod];
-            oldValue = prevModMap[mod];
-
-            if (!modMap[mod] || value !== oldValue || (oldValue && !value)) {
-              name = formatName(mod);
-              className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, name);
-              removeClassesWithPrefix($el, className);
-            }
-          }
-
-          for (i = 0, len = mods.length; i < len; i++) {
-            mod = mods[i];
-            value = modMap[mod];
-            oldValue = prevModMap[mod];
-            name = formatName(mod);
-
-            if (!name) continue;
-
-            className = bemConfig.generateClass(ctrl.blockName, ctrl.elemName, name || '', value);
-
-            if (value !== oldValue && value) {
-              addClass($el, className);
-            }
+          if ('mod' in $attrs) {
+            initMod($element, $scope, blockName, name, $attrs.mod, bemConfig.generateClass);
+            $element[0].removeAttribute('mod');
           }
         }
-
-        var modString = attrs.mod;
-        var watch = true;
-
-        if (modString.slice(0, 2) === '::') {
-          modString === modString.slice(2);
-          watch = false;
-        }
-
-        if (watch) {
-          scope.$watch(function() {
-            return scope.$eval(modString);
-          }, setMod, true);
-        }
-
-        $el[0].removeAttribute('mod');
-
-        setMod(scope.$eval(modString));
       }
     }
   }]);
