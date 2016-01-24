@@ -1,16 +1,12 @@
 (function(angular) {
   'use strict';
 
-  function log() {
-    //console.log.apply(console, Array.prototype.slice.call(arguments));
-  }
-
   if (!angular) {
     throw new Error('angular-bem: angular required');
   }
 
   if (angular.version.major !== 1 || angular.version.minor < 2) {
-    throw new Error('angular-bem: unsupported version of angular. use >= 1.4.0');
+    throw new Error('angular-bem: unsupported version of angular. use >= 1.2.0');
   }
 
   // modName -> mod_name
@@ -18,40 +14,10 @@
     return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
   }
 
-  function copyObject(obj) {
-    var newObj = {};
-
-    for (var key in obj) {
-      newObj[key] = obj[key];
-    }
-
-    return newObj;
+  function isDynamic(str) {
+    return !!~str.indexOf(':');
   }
 
-  function handleModMap(modMap) {
-    var tmp, i;
-    if (Array.isArray(modMap)) {
-      tmp = {};
-      for (var i = 0; i < modMap.length; i++) {
-        if (modMap[i]) {
-          tmp[modMap[i]] = true;
-        }
-      }
-    } else if (typeof(modMap) === 'string') {
-      tmp = {};
-      if (modMap) {
-        modMap = modMap.split(/\s+/)
-        for (var i = 0; i < modMap.length; i++) {
-          if (modMap[i]) {
-            tmp[modMap[i]] = true;
-          }
-        }
-      }
-    } else {
-      tmp = modMap;
-    }
-    return tmp;
-  }
   var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
 
   if (classListSupport) {
@@ -81,20 +47,7 @@
     };
   }
 
-  function removeClassesWithPrefix(el, prefix, except) {
-    var classes = getClasses(el);
-    var size = prefix.length, cls, i, len;
-    for (i = 0, len = classes.length; i < len; i++) {
-      cls = classes[i];
-      if (cls.slice(0, size) === prefix && except !== cls) {
-        removeClass(el, cls);
-      }
-    }
-  }
-
   function generateClass(blockName, elemName, modName, modValue) {
-    blockName = toKebabCase(blockName);
-    elemName = toKebabCase(elemName);
     modName = toKebabCase(modName);
 
     var cls = blockName;
@@ -105,7 +58,7 @@
 
     if (modName) {
       cls += '--' + modName;
-      if (typeof(modValue) !== 'boolean' && modValue != null) {
+      if (typeof(modValue) !== 'boolean' && modValue) {
         cls += '-' + modValue;
       }
     }
@@ -113,84 +66,51 @@
     return cls;
   }
 
-  function parseMods(mods) {
-    if (typeof mods === 'string') {
-      mods = mods.split(/\s+/);
-
-      if (mods[0] === '') {
-        mods = [];
-      }
-    }
-
-    if (Array.isArray(mods)) {
-      var arr = mods;
-
-      mods = {};
-
-      arr.forEach(function(key) {
-        mods[key] = true;
-      });
-    } else if (typeof mods !== 'object') {
-      return {};
-    }
-
-    for (var key in mods) {
-      if (!mods[key]) {
-        delete mods[key];
-      }
-    };
-
-    return mods;
-  }
-
-  function setMods($el, blockName, elemName, mods, oldMods, classGen) {
-    log('mods', mods, oldMods, mods === oldMods);
-    Object.keys(mods).forEach(function(key) {
-      if (oldMods[key]) {
-        if (oldMods[key] !== mods[key]) {
-          removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
-          addClass($el, classGen(blockName, elemName, key, mods[key]));
-          log('change', classGen(blockName, elemName, key, oldMods[key]), ' -> ', classGen(blockName, elemName, key, mods[key]));
-        }
-      } else if (mods[key]) {
-        addClass($el, classGen(blockName, elemName, key, mods[key]));
-        log('add', classGen(blockName, elemName, key, mods[key]));
-      }
-    });
-
-    Object.keys(oldMods).forEach(function(key) {
-      if (!(key in mods)) {
-        if (oldMods[key] && !(key in mods)) {
-          removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
-          log('remove', classGen(blockName, elemName, key, oldMods[key]));
-        }
-      }
-    });
-  }
-
   function initMod($el, $scope, blockName, elemName, modAttr, classGen) {
-    var watch = true, mods, oldMods = {};
+    var watch = isDynamic(modAttr), mods, oldMods, modsList, watchList = [], i, key;
 
-    if (modAttr.slice(0, 2) === '::') {
-      modAttr === modAttr.slice(2);
-      watch = false;
+    modAttr = '{' + modAttr
+            .split(';')
+            .filter(function(s) {
+              return s.trim();
+            })
+            .map(function(s) {
+              return s + (isDynamic(s) ? '' : ': true');
+            })
+            .join(',') + '}';
+
+    function setMods(mods, oldMods) {
+      for (i = 0; i < modsList.length; i++) {
+        key = modsList[i];
+
+        if (mods[key]) {
+          if (oldMods[key] !== mods[key]) {
+            if (oldMods[key]) {
+              removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+            }
+            addClass($el, classGen(blockName, elemName, key, mods[key]));
+          }
+        } else {
+          if (oldMods[key]) {
+            removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+          }
+        }
+      }
     }
 
     if (watch) {
       $scope.$watch(function() {
         return $scope.$eval(modAttr);
       }, function(mods) {
-        mods = parseMods(mods);
-        setMods($el, blockName, elemName, mods, oldMods, classGen);
-
-        oldMods = copyObject(mods);
+        setMods(mods, oldMods);
+        oldMods = mods;
       }, true);
     }
 
-    mods = parseMods($scope.$eval(modAttr));
-    setMods($el, blockName, elemName, mods, oldMods, classGen);
-
-    oldMods = copyObject(mods);
+    mods = $scope.$eval(modAttr);
+    modsList = Object.keys(mods)
+    setMods(mods, {});
+    oldMods = mods;
   }
 
   var module = angular.module('tenphi.bem', []);
