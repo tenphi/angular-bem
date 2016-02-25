@@ -2,9 +2,15 @@
 
 [![Build Status](https://travis-ci.org/tenphi/angular-bem.svg?branch=master)](https://travis-ci.org/tenphi/angular-bem) [![Join the chat at https://gitter.im/tenphi/angular-bem](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tenphi/angular-bem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [Angular](https://angularjs.org)-based applications.
+A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [AngularJS](https://angularjs.org) applications.
 
 ## Changelog
+
+### 0.5.0
+* New braces-free syntax
+* Automatic one-time bindings without additional syntax
+* Performance improvements
+* New tests
 
 ### 0.4.1
 * Add test coverage.
@@ -41,8 +47,8 @@ Create a simple markup:
 
 ```html
 <body ng-app="app">
-  <div block="my-block" mod="{ modName: 'value' }">
-    <div elem="my-element" mod="{ modName: 'value', secondModName: true }"></div>
+  <div block="my-block" mod="modName: 'value'">
+    <div elem="my-element" mod="modName: 'value'; secondModName"></div>
   </div>
 </body>
 ```
@@ -57,17 +63,13 @@ It will be transformed into following markup:
 
 ## One-time binding syntax
 
-To activate it include double colon "::" at the beginning of **mod** attribute.
+To avoid extra watchers just use mods without any value when it's possible.
 
 ```html
 <body ng-app="app">
-  <div block="my-block" mod="::{ modName: 'value' }"></div>
+  <div block="my-block" mod="modName"></div>
 </body>
 ```
-
-Works for `angular>=1.2.0`.
-
-Do not confuse with angular 1.3 one-time binding syntax! It looks similar but it is not the same. 
 
 ## Customization
 Create your own BEM-like syntax:
@@ -103,9 +105,9 @@ Now output of previous example will look like:
 
 
 ## Need to know
-* These directives don't use isolated scope. So you can freely use them in various cases even in templates of directives with `replace` option.
-* You can only specify one element or block in one node. This limitation greatly simplify code of module and your app. Anyway this is **BEM** good practice so you should follow it.
-* There is **no way** to create an element of parent block **inside** nested block.
+* These directives don't affect scope or other directives. So you can use them at ease wherever you want.
+* You can only specify one element or block on single node. This limitation greatly simplify code of module and your app.
+* There is **no way** to create an element of parent block **inside** nested block. It's not a component-way. So please avoid it.
 
 ## License
 
