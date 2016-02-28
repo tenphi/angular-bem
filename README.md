@@ -6,7 +6,7 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 
 ## Changelog
 
-### 0.5.0
+### 1.0.0
 * New braces-free syntax
 * Automatic one-time bindings without additional syntax
 * Performance improvements
