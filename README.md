@@ -56,8 +56,8 @@ Create a simple markup:
 It will be transformed into following markup:
 
 ```html
-<div class="my-block my-block--mod-name_value">
-  <div class="my-block__my-element my-block__my-element--mod-name_value my-block__my-element--second-mod-name"></div>
+<div class="my-block my-block--mod-name-value">
+  <div class="my-block__my-element my-block__my-element--mod-name-value my-block__my-element--second-mod-name"></div>
 </div>
 ```
 
