@@ -2,12 +2,22 @@
   'use strict';
 
   if (!angular) {
-    throw new Error('angular-bem: angular required');
+    throw new Error('angular-bem: Angular is required');
   }
 
   if (angular.version.major !== 1 || angular.version.minor < 2) {
-    throw new Error('angular-bem: unsupported version of angular. use >= 1.2.0');
+    throw new Error('angular-bem: unsupported version of Angular. Use >= 1.2.0');
   }
+
+  /**
+   * BEM separators.
+   * @type {Object}
+   */
+  var settings = {
+    el: '__',
+    mod: '--',
+    modValue: '-'
+  };
 
   // modName -> mod_name
   function toKebabCase(str) {
@@ -53,13 +63,13 @@
     var cls = blockName;
 
     if (elemName) {
-      cls += '__' + elemName;
+      cls += settings.el + elemName;
     }
 
     if (modName) {
-      cls += '--' + modName;
+      cls += settings.mod + modName;
       if (typeof(modValue) !== 'boolean' && modValue) {
-        cls += '-' + modValue;
+        cls += settings.modValue + modValue;
       }
     }
 
@@ -67,7 +77,7 @@
   }
 
   function initMod($el, $scope, blockName, elemName, modAttr, classGen) {
-    var watch = isDynamic(modAttr), mods, oldMods, modsList, watchList = [], i, key;
+    var watch = isDynamic(modAttr), mods, oldMods, modsList, watchList = [], i, l, key;
 
     modAttr = '{' + modAttr
             .split(';')
@@ -80,7 +90,7 @@
             .join(',') + '}';
 
     function setMods(mods, oldMods) {
-      for (i = 0; i < modsList.length; i++) {
+      for (i = 0, l = modsList.length; i < l; i++) {
         key = modsList[i];
 
         if (mods[key]) {
@@ -182,6 +192,6 @@
 })(window.angular);
 
 /* commonjs package manager support (eg componentjs) */
-if (typeof module !== "undefined" && typeof exports !== "undefined" && module.exports === exports){
+if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.exports === exports) {
   module.exports = 'tenphi.bem';
 }
