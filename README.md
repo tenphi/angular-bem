@@ -7,7 +7,11 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 ## Changelog
 
 ### 1.1.0
-* New mod-once attribute to bind modifiers without watchers. Note that there is no sense or capability to use `mod` and `mod-once` attributes simultaneously on single node.
+* New mod-once attribute to bind modifiers without watchers. Note that there is no sense or capability to use `mod` and `mod-once` attributes simultaneously on a single node.
+* New bemConfigProvider with following API:
+  * #setSeparators(el, mod, value) - Specify class separators for your own syntax approach.
+  * #ignoreValues(bool) - If it's true then no value will add to the modifier class name. Use it if you don't need values in your markup and tired of having to write `!!` before modifier values. Default value is `false`.
+  * setModCase(modCase) - Specify modifier name case. Use it if you have different naming approach. Posible values: `kebab`, `snake`, `camel`. If you will use the last option the modifier name will not be changed at all. Default value is `kebab`.
 
 ### 1.0.0
 * New braces-free syntax
@@ -66,7 +70,7 @@ It will be transformed into following markup:
 
 ## One-time binding syntax
 
-To avoid extra watchers just use mods without any value when it's possible.
+Note that if you use only mod names in `mod` attribute (without values) then no watchers will be created on this node by `angular-bem`.
 
 ```html
 <body ng-app="app">
@@ -74,36 +78,47 @@ To avoid extra watchers just use mods without any value when it's possible.
 </body>
 ```
 
-## Customization
+Use `mod-once` attribute instead of `mod` to prevent watcher creation.
+
+```html
+<body ng-app="app">
+  <div block="my-block" mod-once="modName: $ctrl.model.modName"></div>
+</body>
+```
+
+## Syntax customization
 Create your own BEM-like syntax:
 
 ```javascript
 app.config(function(bemConfigProvider) {
-  bemConfigProvider.generateClass = function generateClass(blockName, elemName, modName, modValue) {
-    var cls = blockName;
-
-    if (elemName != null) {
-      cls += '--' + elemName;
-    }
-
-    if (modName != null) {
-      cls = '~' + modName;
-      if ((typeof(modValue) !== 'boolean' && modValue != null)) {
-        cls += '-' + modValue;
-      }
-    }
-
-    return cls;
-  };
+  bemConfigProvider.setSeparators('--', '__', '_');
 });
 ```
 
 Now output of previous example will look like:
 
 ```html
-<div class="my-block ~mod-name-value">
-  <div class="my-block--my-element ~mod-name-value ~second-mod-name"></div>
+<div class="my-block my-block__mod-name_value">
+  <div class="my-block--my-element my-block--my-element__mod-name_value my-block--my-element__second-mod-name"></div>
 </div>
+```
+
+## Ignore values
+If you don't use values in your markup and tired of having to write `!!` before modifier values you can easily disable value addition.
+
+```javascript
+app.config(function(bemConfigProvider) {
+  bemConfigProvider.ignoreValues();
+});
+```
+
+## Change modifier naming
+By default modifer name will be converted to `kabeb` case after rendering but you can change it to 'snake' or 'camel' if you use different naming approach. `camel` option will disable transformation at all.
+
+```javascript
+app.config(function(bemConfigProvider) {
+  bemConfigProvider.setModCase('snake');
+});
 ```
 
 
