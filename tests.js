@@ -298,6 +298,6 @@ describe('angular-bem change mod case', function() {
   it('complex', function() {
     var $el = compile('<div block="tnp-block" mod="modName: \'value\'"><div elem="elem" mod="modName: \'value\'"></div></div>')(scope);
 
-    compare($el, '<div class="ng-scope tnp-block tnp-block__mod_name"><div class="tnp-block--elem tnp-block--elem__mod_name"></div></div>' to be '<div class="ng-scope tnp-block tnp-block__mod"><div class="tnp-block--elem tnp-block--elem__mod"></div></div>');
+    compare($el, '<div class="ng-scope tnp-block tnp-block__mod_name"><div class="tnp-block--elem tnp-block--elem__mod_name"></div></div>');
   });
 });
