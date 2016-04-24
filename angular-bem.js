@@ -2,16 +2,31 @@
   'use strict';
 
   if (!angular) {
-    throw new Error('angular-bem: angular required');
+    throw new Error('angular-bem: Angular is required');
   }
 
   if (angular.version.major !== 1 || angular.version.minor < 2) {
-    throw new Error('angular-bem: unsupported version of angular. use >= 1.2.0');
+    throw new Error('angular-bem: unsupported version of Angular. Use >= 1.2.0');
   }
 
-  // modName -> mod_name
-  function toKebabCase(str) {
-    return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
+  var separators = {
+    el: '__',
+    mod: '--',
+    value: '-'
+  };
+  var ignoreValues = false;
+  var modCase = 'kebab';
+
+  // modName -> mod-name
+  function modNameHandler(str) {
+    switch(modCase) {
+      case 'kebab':
+        return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
+      case 'snake':
+        return str ? str.replace(/[A-Z]/g, function(s) {return '_' + s.toLowerCase() }).replace(/$\-/, '') : '';
+      default:
+        return str;
+    }
   }
 
   function isDynamic(str) {
@@ -19,7 +34,7 @@
   }
 
   var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
-
+  
   if (classListSupport) {
     getClasses = function(el) {
       return Array.prototype.slice.call(el[0].classList);
@@ -48,26 +63,26 @@
   }
 
   function generateClass(blockName, elemName, modName, modValue) {
-    modName = toKebabCase(modName);
+    modName = modNameHandler(modName);
 
     var cls = blockName;
 
     if (elemName) {
-      cls += '__' + elemName;
+      cls += separators.el + elemName;
     }
 
     if (modName) {
-      cls += '--' + modName;
+      cls += separators.mod + modName;
       if (typeof(modValue) !== 'boolean' && modValue) {
-        cls += '-' + modValue;
+        cls += separators.value + modValue;
       }
     }
 
     return cls;
   }
 
-  function initMod($el, $scope, blockName, elemName, modAttr, watch, classGen) {
-    var mods, oldMods, modsList, i, key;
+  function initMod($el, $scope, blockName, elemName, modAttr, watch) {
+    var mods, oldMods, modsList, i, l, key;
 
     modAttr = '{' + modAttr
             .split(';')
@@ -80,19 +95,19 @@
             .join(',') + '}';
 
     function setMods(mods, oldMods) {
-      for (i = 0; i < modsList.length; i++) {
+      for (i = 0, l = modsList.length; i < l; i++) {
         key = modsList[i];
 
         if (mods[key]) {
           if (oldMods[key] !== mods[key]) {
             if (oldMods[key]) {
-              removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+              removeClass($el, generateClass(blockName, elemName, key, ignoreValues ? undefined : oldMods[key]));
             }
-            addClass($el, classGen(blockName, elemName, key, mods[key]));
+            addClass($el, generateClass(blockName, elemName, key, ignoreValues ? undefined : mods[key]));
           }
         } else {
           if (oldMods[key]) {
-            removeClass($el, classGen(blockName, elemName, key, oldMods[key]));
+            removeClass($el, generateClass(blockName, elemName, key, ignoreValues ? undefined : oldMods[key]));
           }
         }
       }
@@ -116,16 +131,31 @@
   var module = angular.module('tenphi.bem', []);
 
   module.provider('bemConfig', function() {
-    var _this = this;
+    this.setSeparators = function(el, mod, value) {
+      separators.el = el || separators.el;
+      separators.mod = mod || separators.mod;
+      separators.value = value || separators.value;
+    };
+    this.ignoreValues = function(bool) {
+      ignoreValues = !!bool;
+    };
+    this.setModCase = function(newModCase) {
+      if (!~['kebab', 'camel', 'snake'].indexOf(newModCase)) {
+        throw 'Wrong mod case. You can use only these cases: kebab, snake, camel';
+      }
 
-    this.generateClass = generateClass;
+      modCase = newModCase;
+    };
 
     this.$get = function() {
-      return { generateClass: _this.generateClass };
+      return {
+        separators: separators,
+        ignoreValues: ignoreValues
+      };
     };
   });
 
-  module.directive('block', ['bemConfig', function(bemConfig) {
+  module.directive('block', [function() {
     return {
       restrict: 'A',
       require: 'block',
@@ -138,20 +168,20 @@
         this.block = true;
 
         $element[0].removeAttribute('block');
-        addClass($element, bemConfig.generateClass(this.name));
+        addClass($element, generateClass(this.name));
 
         if ('mod' in $attrs) {
-          initMod($element, $scope, blockName, null, $attrs.mod || $attrs.modOnce, $attrs.mod ? isDynamic($attrs.mod) : false, bemConfig.generateClass);
+          initMod($element, $scope, blockName, null, $attrs.mod || $attrs.modOnce, $attrs.mod ? isDynamic($attrs.mod) : false);
           $element[0].removeAttribute('mod');
         } else if ('modOnce' in $attrs) {
-          initMod($element, $scope, blockName, null, $attrs.modOnce, false, bemConfig.generateClass);
+          initMod($element, $scope, blockName, null, $attrs.modOnce, false);
           $element[0].removeAttribute('mod-once');
         }
       }]
     }
   }]);
 
-  module.directive('elem', ['bemConfig', function(bemConfig) {
+  module.directive('elem', [function() {
     return {
       restrict: 'EA',
       require: ['^block', 'elem'],
@@ -171,13 +201,13 @@
           elemCtrl.elem = true;
 
           $element[0].removeAttribute('elem');
-          addClass($element, bemConfig.generateClass(blockName, name));
+          addClass($element, generateClass(blockName, name));
 
           if ('mod' in $attrs) {
-            initMod($element, $scope, blockName, name, $attrs.mod, isDynamic($attrs.mod), bemConfig.generateClass);
+            initMod($element, $scope, blockName, name, $attrs.mod, isDynamic($attrs.mod));
             $element[0].removeAttribute('mod');
           } else if ('modOnce' in $attrs) {
-            initMod($element, $scope, blockName, name, $attrs.modOnce, false, bemConfig.generateClass);
+            initMod($element, $scope, blockName, name, $attrs.modOnce, false);
             $element[0].removeAttribute('mod-once');
           }
         }
@@ -188,6 +218,6 @@
 })(window.angular);
 
 /* commonjs package manager support (eg componentjs) */
-if (typeof module !== "undefined" && typeof exports !== "undefined" && module.exports === exports){
+if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.exports === exports) {
   module.exports = 'tenphi.bem';
 }

@@ -1,9 +1,9 @@
+function compare($el, html) {
+  expect($el[0].outerHTML).toBe(html);
+}
+
 describe('angular-bem', function() {
   var compile, scope, timeout, modAttr;
-
-  function compare($el, html) {
-    expect($el[0].outerHTML).toBe(html);
-  }
 
   beforeEach(function() {
     module('tenphi.bem');
@@ -213,4 +213,91 @@ describe('angular-bem', function() {
 
   });
 
+});
+
+describe('angular-bem custom syntax', function() {
+  var compile, scope, timeout, modAttr;
+
+  beforeEach(function() {
+    module('tenphi.bem');
+
+    angular.module('app', ['tenphi.bem'])
+      .config(['bemConfigProvider', function(bemConfigProvider) {
+        bemConfigProvider.setSeparators('--', '__', '_');
+      }]);
+  });
+
+  beforeEach(function() {
+    module('app');
+
+    inject(function($compile, $rootScope, $timeout) {
+      compile = $compile;
+      scope = $rootScope.$new();
+      timeout = $timeout;
+    });
+  });
+
+  it('complex', function() {
+    var $el = compile('<div block="tnp-block" mod="mod: \'value\'"><div elem="elem" mod="mod: \'value\'"></div></div>')(scope);
+
+    compare($el, '<div class="ng-scope tnp-block tnp-block__mod_value"><div class="tnp-block--elem tnp-block--elem__mod_value"></div></div>');
+  });
+});
+
+describe('angular-bem ignore values', function() {
+  var compile, scope, timeout, modAttr;
+
+  beforeEach(function() {
+    module('tenphi.bem');
+
+    angular.module('app', ['tenphi.bem'])
+      .config(['bemConfigProvider', function(bemConfigProvider) {
+        bemConfigProvider.ignoreValues(true);
+      }]);
+  });
+
+  beforeEach(function() {
+    module('app');
+
+    inject(function($compile, $rootScope, $timeout) {
+      compile = $compile;
+      scope = $rootScope.$new();
+      timeout = $timeout;
+    });
+  });
+
+  it('complex', function() {
+    var $el = compile('<div block="tnp-block" mod="mod: \'value\'"><div elem="elem" mod="mod: \'value\'"></div></div>')(scope);
+
+    compare($el, '<div class="ng-scope tnp-block tnp-block__mod"><div class="tnp-block--elem tnp-block--elem__mod"></div></div>');
+  });
+});
+
+describe('angular-bem change mod case', function() {
+  var compile, scope, timeout, modAttr;
+
+  beforeEach(function() {
+    module('tenphi.bem');
+
+    angular.module('app', ['tenphi.bem'])
+      .config(['bemConfigProvider', function(bemConfigProvider) {
+        bemConfigProvider.setModCase('snake');
+      }]);
+  });
+
+  beforeEach(function() {
+    module('app');
+
+    inject(function($compile, $rootScope, $timeout) {
+      compile = $compile;
+      scope = $rootScope.$new();
+      timeout = $timeout;
+    });
+  });
+
+  it('complex', function() {
+    var $el = compile('<div block="tnp-block" mod="modName: \'value\'"><div elem="elem" mod="modName: \'value\'"></div></div>')(scope);
+
+    compare($el, '<div class="ng-scope tnp-block tnp-block__mod_name"><div class="tnp-block--elem tnp-block--elem__mod_name"></div></div>' to be '<div class="ng-scope tnp-block tnp-block__mod"><div class="tnp-block--elem tnp-block--elem__mod"></div></div>');
+  });
 });
