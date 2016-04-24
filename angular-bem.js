@@ -66,8 +66,8 @@
     return cls;
   }
 
-  function initMod($el, $scope, blockName, elemName, modAttr, classGen) {
-    var watch = isDynamic(modAttr), mods, oldMods, modsList, watchList = [], i, key;
+  function initMod($el, $scope, blockName, elemName, modAttr, watch, classGen) {
+    var mods, oldMods, modsList, i, key;
 
     modAttr = '{' + modAttr
             .split(';')
@@ -141,8 +141,11 @@
         addClass($element, bemConfig.generateClass(this.name));
 
         if ('mod' in $attrs) {
-          initMod($element, $scope, blockName, null, $attrs.mod, bemConfig.generateClass);
+          initMod($element, $scope, blockName, null, $attrs.mod || $attrs.modOnce, $attrs.mod ? isDynamic($attrs.mod) : false, bemConfig.generateClass);
           $element[0].removeAttribute('mod');
+        } else if ('modOnce' in $attrs) {
+          initMod($element, $scope, blockName, null, $attrs.modOnce, false, bemConfig.generateClass);
+          $element[0].removeAttribute('mod-once');
         }
       }]
     }
@@ -171,8 +174,11 @@
           addClass($element, bemConfig.generateClass(blockName, name));
 
           if ('mod' in $attrs) {
-            initMod($element, $scope, blockName, name, $attrs.mod, bemConfig.generateClass);
+            initMod($element, $scope, blockName, name, $attrs.mod, isDynamic($attrs.mod), bemConfig.generateClass);
             $element[0].removeAttribute('mod');
+          } else if ('modOnce' in $attrs) {
+            initMod($element, $scope, blockName, name, $attrs.modOnce, false, bemConfig.generateClass);
+            $element[0].removeAttribute('mod-once');
           }
         }
       }

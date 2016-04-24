@@ -6,6 +6,9 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 
 ## Changelog
 
+### 1.1.0
+* New mod-once attribute to bind modifiers without watchers. Note that there is no sense or capability to use `mod` and `mod-once` attributes simultaneously on single node.
+
 ### 1.0.0
 * New braces-free syntax
 * Automatic one-time bindings without additional syntax
