@@ -68,6 +68,12 @@ It will be transformed into following markup:
 </div>
 ```
 
+Of course there is a support for conditional modifiers:
+
+```html
+<div block="my-block" mod="disabled: $ctrl.isDisabled"></div>
+```
+
 ## One-time binding syntax
 
 Note that if you use only mod names in `mod` attribute (without values) then no watchers will be created on this node by `angular-bem`.
