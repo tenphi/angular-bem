@@ -33,34 +33,19 @@
     return !!~str.indexOf(':');
   }
 
-  var classListSupport = !!document.createElement('div').classList, getClasses, addClass, removeClass;
-  
-  if (classListSupport) {
-    getClasses = function(el) {
-      return Array.prototype.slice.call(el[0].classList);
-    };
 
-    addClass = function(el, cls) {
-      el[0].classList.add(cls);
-    };
+  var getClasses = function(el) {
+    return el[0].className.split(/\s/g);
+  };
 
-    removeClass = function(el, cls) {
-      el[0].classList.remove(cls);
-    };
+  var addClass = function(el, cls) {
+    el.addClass(cls);
+  };
 
-  } else {
-    getClasses = function(el) {
-      return el[0].className.split(/\s/g);
-    };
+  var removeClass = function(el, cls) {
+    el.removeClass(cls);
+  };
 
-    addClass = function(el, cls) {
-      el.addClass(cls);
-    };
-
-    removeClass = function(el, cls) {
-      el.removeClass(cls);
-    };
-  }
 
   function generateClass(blockName, elemName, modName, modValue) {
     modName = modNameHandler(modName);

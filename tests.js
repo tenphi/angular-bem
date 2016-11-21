@@ -33,10 +33,22 @@ describe('angular-bem', function() {
         compare($el, '<div class="ng-scope tnp-block"></div>');
       });
 
+      // IE can't do this with classList
+      it('insert block name on svg', function () {
+          var $el = compile('<svg block="tnp-svg-block"></svg>')(scope);
+          expect($el.hasClass('tnp-svg-block')).toBe(true);
+      });
+
       it('insert element name', function() {
         var $el = compile('<div block="tnp-block"><div elem="tnp-elem"></div></div>')(scope);
 
         compare($el, '<div class="ng-scope tnp-block"><div class="tnp-block__tnp-elem"></div></div>');
+      });
+
+      it('insert element name on svg', function() {
+        var $el = compile('<svg block="tnp-svg-block"><path elem="tnp-svg-elem"></path></svg>')(scope);
+        expect($el.hasClass('tnp-svg-block')).toBe(true);
+        expect($el.children().hasClass('tnp-svg-block__tnp-svg-elem')).toBe(true);
       });
 
       describe('insert modifiers in block', function() {
