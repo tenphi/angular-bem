@@ -40,7 +40,7 @@ $ bower install angular-bem
 or
 
 ```bash
-$ npm install angular-bem
+$ npm install angular-bem@^1
 ```
 
 ## Example
