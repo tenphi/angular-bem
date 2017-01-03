@@ -73,7 +73,7 @@ function setMods(blockName, elemName, mods, oldMods, element, renderer) {
   selector: '[block]',
   inputs: ['mod']
 })
-export class Block {
+class Block {
   public element: ElementRef;
   public renderer: Renderer;
   public name: string;
@@ -113,7 +113,7 @@ export class Block {
   selector: '[elem]',
   inputs: ['mod']
 })
-export class Elem {
+class Elem {
   public element: ElementRef;
   public renderer: Renderer;
   public blockName: string;
@@ -154,13 +154,12 @@ export class Elem {
 
 @NgModule({
   declarations: [
-    // helpers
     Block,
     Elem
   ],
-  imports: [],
-  providers: []
+  exports: [
+    Block,
+    Elem
+  ]
 })
-export class BemModule {
-  constructor() {}
-}
+export class BemModule {}
