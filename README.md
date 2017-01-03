@@ -1,8 +1,8 @@
-# @angular/bem
+# angular-bem
 
 A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [Angular](https://angularjs.org) (v2+) applications.
 
-[ANGULAR 1.X VERSION](https://github.com/tenphi/angular-bem/tree/v1)
+[ANGULAR 1.X VERSION IS HERE](https://github.com/tenphi/angular-bem/tree/v1)
 
 ## Changelog
 
@@ -12,7 +12,7 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 ## Install
 
 ```bash
-$ npm install @angular/bem
+$ npm install angular-bem
 ```
 
 ## Need to know
