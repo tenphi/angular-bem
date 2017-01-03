@@ -20,3 +20,6 @@ export declare class Elem {
     constructor(element: ElementRef, renderer: Renderer, name: string, block: Block);
     ngOnChanges(): void;
 }
+export declare class BemModule {
+    constructor();
+}

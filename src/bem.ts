@@ -1,4 +1,4 @@
-import {Directive, Attribute, ElementRef, Renderer} from '@angular/core';
+import { NgModule, Directive, Attribute, ElementRef, Renderer } from '@angular/core';
 
 function toKebabCase(str) {
   return str ? str.replace(/[A-Z]/g, s => '-' + s.toLowerCase()).replace(/$\-/, '') : '';
@@ -150,4 +150,17 @@ export class Elem {
       this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
     }
   }
+}
+
+@NgModule({
+  declarations: [
+    // helpers
+    Block,
+    Elem
+  ],
+  imports: [],
+  providers: []
+})
+export class BemModule {
+  constructor() {}
 }

@@ -116,4 +116,22 @@ Elem = __decorate([
         core_1.Renderer, String, Block])
 ], Elem);
 exports.Elem = Elem;
+var BemModule = (function () {
+    function BemModule() {
+    }
+    return BemModule;
+}());
+BemModule = __decorate([
+    core_1.NgModule({
+        declarations: [
+            // helpers
+            Block,
+            Elem
+        ],
+        imports: [],
+        providers: []
+    }),
+    __metadata("design:paramtypes", [])
+], BemModule);
+exports.BemModule = BemModule;
 //# sourceMappingURL=bem.js.map
