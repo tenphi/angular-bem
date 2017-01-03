@@ -1,23 +1,46 @@
 "use strict";
 var core_1 = require("@angular/core");
-function toKebabCase(str) {
-    return str ? str.replace(/[A-Z]/g, function (s) { return '-' + s.toLowerCase(); }).replace(/$\-/, '') : '';
+var BemConfig = (function () {
+    function BemConfig() {
+    }
+    return BemConfig;
+}());
+exports.BemConfig = BemConfig;
+var separators = {
+    el: '__',
+    mod: '--',
+    val: '-'
+};
+var ignoreValues = false;
+var modCase = 'kebab';
+function modNameHandler(str) {
+    switch (modCase) {
+        case 'kebab':
+            return str ? str.replace(/[A-Z]/g, function (s) { return '-' + s.toLowerCase(); }).replace(/$\-/, '') : '';
+        case 'snake':
+            return str ? str.replace(/[A-Z]/g, function (s) { return '_' + s.toLowerCase(); }).replace(/$\-/, '') : '';
+        default:
+            return str;
+    }
 }
 function generateClass(blockName, elemName, modName, modValue) {
+    if (ignoreValues) {
+        modValue = !!modValue;
+    }
     blockName = blockName;
     elemName = elemName;
-    modName = toKebabCase(modName);
+    modName = modNameHandler(modName);
     if (typeof modValue !== 'string' && typeof modValue !== 'boolean') {
         modValue = !!modValue;
     }
     var cls = blockName;
     if (elemName) {
-        cls += '__' + elemName;
+        cls += separators.el + elemName;
     }
     if (modName) {
-        cls += '--' + modName;
+        cls += separators.mod + modName;
         if (typeof (modValue) !== 'boolean' && modValue != null) {
-            cls += '-' + modValue;
+            cls += separators.val + modValue;
         }
     }
     return cls;
@@ -114,12 +137,31 @@ Elem = __decorate([
     __metadata("design:paramtypes", [core_1.ElementRef,
         core_1.Renderer, String, Block])
 ], Elem);
-var BemModule = (function () {
+var BemModule = BemModule_1 = (function () {
     function BemModule() {
     }
+    BemModule.config = function (data) {
+        if (!data)
+            return BemModule_1;
+        if (data.separators) {
+            separators.el = data.separators[0] || '__';
+            separators.mod = data.separators[1] || '--';
+            separators.val = data.separators[2] || '-';
+        }
+        if ('ignoreValues' in data) {
+            ignoreValues = !!data.ignoreValues;
+        }
+        if (data.modCase) {
+            if (!~['kebab', 'camel', 'snake'].indexOf(data.modCase)) {
+                throw 'Wrong mod case. You can use only these cases: kebab, snake, camel';
+            }
+            modCase = data.modCase;
+        }
+        return BemModule_1;
+    };
     return BemModule;
 }());
-BemModule = __decorate([
+BemModule = BemModule_1 = __decorate([
     core_1.NgModule({
         declarations: [
             Block,
@@ -133,4 +175,6 @@ BemModule = __decorate([
     __metadata("design:paramtypes", [])
 ], BemModule);
 exports.BemModule = BemModule;
+;
+var BemModule_1;
 //# sourceMappingURL=bem.js.map

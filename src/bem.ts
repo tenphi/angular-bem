@@ -1,13 +1,38 @@
 import { NgModule, Directive, Attribute, ElementRef, Renderer } from '@angular/core';
 
-function toKebabCase(str) {
-  return str ? str.replace(/[A-Z]/g, s => '-' + s.toLowerCase()).replace(/$\-/, '') : '';
+export class BemConfig {
+  separators?: Array<string>
+  ignoreValues?: boolean
+  modCase?: string
+}
+
+const separators = {
+  el: '__',
+  mod: '--',
+  val: '-'
+};
+var ignoreValues = false;
+var modCase = 'kebab';
+
+function modNameHandler(str) {
+  switch(modCase) {
+    case 'kebab':
+      return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
+    case 'snake':
+      return str ? str.replace(/[A-Z]/g, function(s) {return '_' + s.toLowerCase() }).replace(/$\-/, '') : '';
+    default:
+      return str;
+  }
 }
 
 function generateClass(blockName: string, elemName?: string, modName?: string, modValue?) {
+  if (ignoreValues) {
+    modValue = !!modValue;
+  }
+
   blockName = blockName;
   elemName = elemName;
-  modName = toKebabCase(modName);
+  modName = modNameHandler(modName);
 
   if (typeof modValue !== 'string' && typeof modValue !== 'boolean') {
     modValue = !!modValue;
@@ -16,13 +41,13 @@ function generateClass(blockName: string, elemName?: string, modName?: string, m
   let cls = blockName;
 
   if (elemName) {
-    cls += '__' + elemName;
+    cls += separators.el + elemName;
   }
 
   if (modName) {
-    cls += '--' + modName;
+    cls += separators.mod + modName;
     if (typeof(modValue) !== 'boolean' && modValue != null) {
-      cls += '-' + modValue;
+      cls += separators.val + modValue;
     }
   }
 
@@ -162,4 +187,28 @@ class Elem {
     Elem
   ]
 })
-export class BemModule {}
+export class BemModule {
+  static config(data: BemConfig) {
+    if (!data) return BemModule;
+
+    if (data.separators) {
+      separators.el = data.separators[0] || '__';
+      separators.mod = data.separators[1] || '--';
+      separators.val = data.separators[2] || '-';
+    }
+
+    if ('ignoreValues' in data) {
+      ignoreValues = !!data.ignoreValues;
+    }
+
+    if (data.modCase) {
+      if (!~['kebab', 'camel', 'snake'].indexOf(data.modCase)) {
+        throw 'Wrong mod case. You can use only these cases: kebab, snake, camel';
+      }
+
+      modCase = data.modCase;
+    }
+
+    return BemModule;
+  }
+};
