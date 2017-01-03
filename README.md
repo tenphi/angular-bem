@@ -2,6 +2,8 @@
 
 A set of directives to simplify your workflow with [BEM](https://bem.info)-markup in [Angular](https://angularjs.org) (v2+) applications.
 
+[ANGULAR 1.x version](https://github.com/tenphi/angular-bem/tree/v1)
+
 ## Changelog
 
 ### 2.0.0
