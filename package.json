@@ -4,7 +4,7 @@
   "description": "A set of Angular (v2+) directives to simplify your workflow with BEM methodology",
   "main": "./dist/bem.js",
   "scripts": {
-    "test": "karma start karma.conf.js"
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",
