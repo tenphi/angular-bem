@@ -84,7 +84,6 @@ Block = __decorate([
     __metadata("design:paramtypes", [core_1.ElementRef,
         core_1.Renderer, String])
 ], Block);
-exports.Block = Block;
 var Elem = (function () {
     function Elem(element, renderer, name, block) {
         this.blockName = block.name;
@@ -115,7 +114,6 @@ Elem = __decorate([
     __metadata("design:paramtypes", [core_1.ElementRef,
         core_1.Renderer, String, Block])
 ], Elem);
-exports.Elem = Elem;
 var BemModule = (function () {
     function BemModule() {
     }
@@ -124,12 +122,13 @@ var BemModule = (function () {
 BemModule = __decorate([
     core_1.NgModule({
         declarations: [
-            // helpers
             Block,
             Elem
         ],
-        imports: [],
-        providers: []
+        exports: [
+            Block,
+            Elem
+        ]
     }),
     __metadata("design:paramtypes", [])
 ], BemModule);
