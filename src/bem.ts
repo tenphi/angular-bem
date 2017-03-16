@@ -4,6 +4,7 @@ export class BemConfig {
   separators?: Array<string>
   ignoreValues?: boolean
   modCase?: string
+  blockPrefix?: string
 }
 
 const separators = {
@@ -13,6 +14,7 @@ const separators = {
 };
 var ignoreValues = false;
 var modCase = 'kebab';
+var blockPrefix = '';
 
 function modNameHandler(str) {
   switch(modCase) {
@@ -38,7 +40,7 @@ function generateClass(blockName: string, elemName?: string, modName?: string, m
     modValue = !!modValue;
   }
 
-  let cls = blockName;
+  let cls = blockPrefix + blockName;
 
   if (elemName) {
     cls += separators.el + elemName;
@@ -207,6 +209,10 @@ export class BemModule {
       }
 
       modCase = data.modCase;
+    }
+
+    if (data.blockPrefix) {
+      blockPrefix = data.blockPrefix
     }
 
     return BemModule;

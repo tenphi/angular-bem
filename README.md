@@ -65,7 +65,8 @@ import { BemModule } from 'angular-bem';
 BemModule.config({
   separators: ['__', '--', '-'], // el / mod / val separators
   modCase: 'kebab', // case of modifiers names
-  ignoreValues: false // cast mod values to booleans
+  ignoreValues: false, // cast mod values to booleans
+  blockPrefix: false // adds a namespace prefix to each block
 }); // method returns BemModule
 ```
 
