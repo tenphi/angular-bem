@@ -1,9 +1,9 @@
-import { NgModule, Directive, Attribute, ElementRef, Renderer } from '@angular/core';
+import { NgModule, Directive, Attribute, Renderer2, Input, ElementRef } from '@angular/core';
 
 export class BemConfig {
-  separators?: Array<string>
-  ignoreValues?: boolean
-  modCase?: string
+  separators?: Array<string>;
+  ignoreValues?: boolean;
+  modCase?: string;
 }
 
 const separators = {
@@ -11,28 +11,24 @@ const separators = {
   mod: '--',
   val: '-'
 };
-var ignoreValues = false;
-var modCase = 'kebab';
+let ignoreValues = false;
+let modCase = 'kebab';
 
-function modNameHandler(str) {
-  switch(modCase) {
+function modNameHandler(str: string): string {
+  switch (modCase) {
     case 'kebab':
-      return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase() }).replace(/$\-/, '') : '';
+      return str ? str.replace(/[A-Z]/g, function(s) {return '-' + s.toLowerCase(); }).replace(/$\-/, '') : '';
     case 'snake':
-      return str ? str.replace(/[A-Z]/g, function(s) {return '_' + s.toLowerCase() }).replace(/$\-/, '') : '';
+      return str ? str.replace(/[A-Z]/g, function(s) {return '_' + s.toLowerCase(); }).replace(/$\-/, '') : '';
     default:
       return str;
   }
 }
 
-function generateClass(blockName: string, elemName?: string, modName?: string, modValue?) {
+function generateClass(blockName: string, elemName?: string, modName?: string, modValue?: boolean | string) {
   if (ignoreValues) {
     modValue = !!modValue;
   }
-
-  blockName = blockName;
-  elemName = elemName;
-  modName = modNameHandler(modName);
 
   if (typeof modValue !== 'string' && typeof modValue !== 'boolean') {
     modValue = !!modValue;
@@ -45,6 +41,7 @@ function generateClass(blockName: string, elemName?: string, modName?: string, m
   }
 
   if (modName) {
+    modName = modNameHandler(modName);
     cls += separators.mod + modName;
     if (typeof(modValue) !== 'boolean' && modValue != null) {
       cls += separators.val + modValue;
@@ -54,7 +51,7 @@ function generateClass(blockName: string, elemName?: string, modName?: string, m
   return cls;
 }
 
-function parseMods(mods) {
+function parseMods(mods: string | string[] | object) {
   if (typeof mods === 'string') {
     mods = mods.split(/\s+/);
   }
@@ -74,48 +71,49 @@ function parseMods(mods) {
   return mods;
 }
 
-function setMods(blockName, elemName, mods, oldMods, element, renderer) {
+function setMods(blockName: string, elemName: string, mods: object, oldMods: object, element: ElementRef, renderer: Renderer2) {
   Object.keys(mods).forEach(key => {
     if (oldMods[key]) {
-      if (mods[key] === oldMods[key]) return;
+      if (mods[key] === oldMods[key]) {
+        return;
+      }
 
-      renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]), false);
+      renderer.removeClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]));
     }
 
     if (mods[key]) {
-      renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, mods[key]), true);
+      renderer.addClass(element.nativeElement, generateClass(blockName, elemName, key, mods[key]));
     }
   });
 
   Object.keys(oldMods).forEach(key => {
     if (!(key in mods) && oldMods[key]) {
-      renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]), false);
+      renderer.removeClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]));
     }
   });
 }
 
 @Directive({
   selector: '[block]',
-  inputs: ['mod']
 })
-class Block {
+export class BlockDirective {
   public element: ElementRef;
-  public renderer: Renderer;
+  public renderer: Renderer2;
   public name: string;
-  public mod;
+  @Input() public mod: string | string[] | object;
   private _mods: Object;
   private _modSerialized: string;
 
   constructor(element: ElementRef,
-              renderer: Renderer,
+              renderer: Renderer2,
               @Attribute('block') name: string) {
 
     this.name = name;
     this.element = element;
     this.renderer = renderer;
 
-    renderer.setElementClass(element.nativeElement, generateClass(name), true);
-  };
+    renderer.addClass(element.nativeElement, generateClass(name));
+  }
 
   ngOnChanges() {
     if (JSON.stringify(this.mod) !== this._modSerialized) {
@@ -127,7 +125,7 @@ class Block {
 
       mods = parseMods(mods);
 
-      setMods(name, null, mods, this._mods || {}, element, renderer);
+      setMods(name, '', mods, this._mods || {}, element, renderer);
 
       this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
     }
@@ -136,29 +134,28 @@ class Block {
 
 @Directive({
   selector: '[elem]',
-  inputs: ['mod']
 })
-class Elem {
+export class ElemDirective {
   public element: ElementRef;
-  public renderer: Renderer;
+  public renderer: Renderer2;
   public blockName: string;
   public name: string;
-  public mod;
+  @Input() public mod: string | string[] | object;
   private _mods: Object;
-  private _modSerialized;
+  private _modSerialized: string;
 
   constructor(element: ElementRef,
-              renderer: Renderer,
+              renderer: Renderer2,
               @Attribute('elem') name: string,
-              block: Block) {
+              block: BlockDirective) {
 
     this.blockName = block.name;
     this.name = name;
     this.element = element;
     this.renderer = renderer;
 
-    renderer.setElementClass(element.nativeElement, generateClass(block.name, name), true);
-  };
+    renderer.addClass(element.nativeElement, generateClass(block.name, name));
+  }
 
   ngOnChanges() {
     if (JSON.stringify(this.mod) !== this._modSerialized) {
@@ -179,17 +176,19 @@ class Elem {
 
 @NgModule({
   declarations: [
-    Block,
-    Elem
+    BlockDirective,
+    ElemDirective,
   ],
   exports: [
-    Block,
-    Elem
+    BlockDirective,
+    ElemDirective,
   ]
 })
 export class BemModule {
   static config(data: BemConfig) {
-    if (!data) return BemModule;
+    if (!data) {
+      return BemModule;
+    }
 
     if (data.separators) {
       separators.el = data.separators[0] || '__';
@@ -211,4 +210,4 @@ export class BemModule {
 
     return BemModule;
   }
-};
+}

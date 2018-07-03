@@ -1,10 +1,10 @@
 {
   "name": "angular-bem",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "A set of Angular (v2+) directives to simplify your workflow with BEM methodology",
   "main": "./dist/bem.js",
   "scripts": {
-    "prepublish": "tsc"
+    "prepare": "tsc"
   },
   "repository": {
     "type": "git",
@@ -23,11 +23,9 @@
   },
   "homepage": "https://github.com/tenphi/angular-bem#readme",
   "devDependencies": {
-    "@angular/core": "^2.3.1",
-    "typescript": "^2.1.4"
+    "@angular/core": "^6.0.0",
+    "typescript": "^2.7.0",
+    "rxjs": "^6.0.0"
   },
-  "types": "./dist/bem.d.ts",
-  "dependencies": {
-    "rxjs": "^5.0.2"
-  }
+  "types": "./dist/bem.d.ts"
 }

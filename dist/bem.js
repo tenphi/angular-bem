@@ -1,6 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var BemConfig = (function () {
+var BemConfig = /** @class */ (function () {
     function BemConfig() {
     }
     return BemConfig;
@@ -27,9 +28,6 @@ function generateClass(blockName, elemName, modName, modValue) {
     if (ignoreValues) {
         modValue = !!modValue;
     }
-    blockName = blockName;
-    elemName = elemName;
-    modName = modNameHandler(modName);
     if (typeof modValue !== 'string' && typeof modValue !== 'boolean') {
         modValue = !!modValue;
     }
@@ -38,6 +36,7 @@ function generateClass(blockName, elemName, modName, modValue) {
         cls += separators.el + elemName;
     }
     if (modName) {
+        modName = modNameHandler(modName);
         cls += separators.mod + modName;
         if (typeof (modValue) !== 'boolean' && modValue != null) {
             cls += separators.val + modValue;
@@ -64,59 +63,62 @@ function parseMods(mods) {
 function setMods(blockName, elemName, mods, oldMods, element, renderer) {
     Object.keys(mods).forEach(function (key) {
         if (oldMods[key]) {
-            if (mods[key] === oldMods[key])
+            if (mods[key] === oldMods[key]) {
                 return;
-            renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]), false);
+            }
+            renderer.removeClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]));
         }
         if (mods[key]) {
-            renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, mods[key]), true);
+            renderer.addClass(element.nativeElement, generateClass(blockName, elemName, key, mods[key]));
         }
     });
     Object.keys(oldMods).forEach(function (key) {
         if (!(key in mods) && oldMods[key]) {
-            renderer.setElementClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]), false);
+            renderer.removeClass(element.nativeElement, generateClass(blockName, elemName, key, oldMods[key]));
         }
     });
 }
-var Block = (function () {
-    function Block(element, renderer, name) {
+var BlockDirective = /** @class */ (function () {
+    function BlockDirective(element, renderer, name) {
         this.name = name;
         this.element = element;
         this.renderer = renderer;
-        renderer.setElementClass(element.nativeElement, generateClass(name), true);
+        renderer.addClass(element.nativeElement, generateClass(name));
     }
-    ;
-    Block.prototype.ngOnChanges = function () {
+    BlockDirective.prototype.ngOnChanges = function () {
         if (JSON.stringify(this.mod) !== this._modSerialized) {
             this._modSerialized = JSON.stringify(this.mod);
             var mods = this.mod;
             var _a = this, renderer = _a.renderer, element = _a.element, name_1 = _a.name;
             mods = parseMods(mods);
-            setMods(name_1, null, mods, this._mods || {}, element, renderer);
+            setMods(name_1, '', mods, this._mods || {}, element, renderer);
             this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
         }
     };
-    return Block;
+    __decorate([
+        core_1.Input(),
+        __metadata("design:type", Object)
+    ], BlockDirective.prototype, "mod", void 0);
+    BlockDirective = __decorate([
+        core_1.Directive({
+            selector: '[block]',
+        }),
+        __param(2, core_1.Attribute('block')),
+        __metadata("design:paramtypes", [core_1.ElementRef,
+            core_1.Renderer2, String])
+    ], BlockDirective);
+    return BlockDirective;
 }());
-Block = __decorate([
-    core_1.Directive({
-        selector: '[block]',
-        inputs: ['mod']
-    }),
-    __param(2, core_1.Attribute('block')),
-    __metadata("design:paramtypes", [core_1.ElementRef,
-        core_1.Renderer, String])
-], Block);
-var Elem = (function () {
-    function Elem(element, renderer, name, block) {
+exports.BlockDirective = BlockDirective;
+var ElemDirective = /** @class */ (function () {
+    function ElemDirective(element, renderer, name, block) {
         this.blockName = block.name;
         this.name = name;
         this.element = element;
         this.renderer = renderer;
-        renderer.setElementClass(element.nativeElement, generateClass(block.name, name), true);
+        renderer.addClass(element.nativeElement, generateClass(block.name, name));
     }
-    ;
-    Elem.prototype.ngOnChanges = function () {
+    ElemDirective.prototype.ngOnChanges = function () {
         if (JSON.stringify(this.mod) !== this._modSerialized) {
             this._modSerialized = JSON.stringify(this.mod);
             var mods = this.mod;
@@ -126,23 +128,29 @@ var Elem = (function () {
             this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
         }
     };
-    return Elem;
+    __decorate([
+        core_1.Input(),
+        __metadata("design:type", Object)
+    ], ElemDirective.prototype, "mod", void 0);
+    ElemDirective = __decorate([
+        core_1.Directive({
+            selector: '[elem]',
+        }),
+        __param(2, core_1.Attribute('elem')),
+        __metadata("design:paramtypes", [core_1.ElementRef,
+            core_1.Renderer2, String, BlockDirective])
+    ], ElemDirective);
+    return ElemDirective;
 }());
-Elem = __decorate([
-    core_1.Directive({
-        selector: '[elem]',
-        inputs: ['mod']
-    }),
-    __param(2, core_1.Attribute('elem')),
-    __metadata("design:paramtypes", [core_1.ElementRef,
-        core_1.Renderer, String, Block])
-], Elem);
-var BemModule = BemModule_1 = (function () {
+exports.ElemDirective = ElemDirective;
+var BemModule = /** @class */ (function () {
     function BemModule() {
     }
+    BemModule_1 = BemModule;
     BemModule.config = function (data) {
-        if (!data)
+        if (!data) {
             return BemModule_1;
+        }
         if (data.separators) {
             separators.el = data.separators[0] || '__';
             separators.mod = data.separators[1] || '--';
@@ -159,22 +167,20 @@ var BemModule = BemModule_1 = (function () {
         }
         return BemModule_1;
     };
+    var BemModule_1;
+    BemModule = BemModule_1 = __decorate([
+        core_1.NgModule({
+            declarations: [
+                BlockDirective,
+                ElemDirective,
+            ],
+            exports: [
+                BlockDirective,
+                ElemDirective,
+            ]
+        })
+    ], BemModule);
     return BemModule;
 }());
-BemModule = BemModule_1 = __decorate([
-    core_1.NgModule({
-        declarations: [
-            Block,
-            Elem
-        ],
-        exports: [
-            Block,
-            Elem
-        ]
-    }),
-    __metadata("design:paramtypes", [])
-], BemModule);
 exports.BemModule = BemModule;
-;
-var BemModule_1;
 //# sourceMappingURL=bem.js.map
