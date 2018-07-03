@@ -6,6 +6,10 @@ A set of directives to simplify your workflow with [BEM](https://bem.info)-marku
 
 ## Changelog
 
+### 2.1.0
+* Support for Angular v6+
+* Refactoring
+
 ### 2.0.0
 * Initial release for Angular v2+
 
