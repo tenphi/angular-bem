@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 var core_1 = require("@angular/core");
 var BemConfig = /** @class */ (function () {
     function BemConfig() {
@@ -95,16 +96,16 @@ var BlockDirective = /** @class */ (function () {
             this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
         }
     };
-    __decorate([
+    tslib_1.__decorate([
         core_1.Input(),
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], BlockDirective.prototype, "mod", void 0);
-    BlockDirective = __decorate([
+    BlockDirective = tslib_1.__decorate([
         core_1.Directive({
             selector: '[block]',
         }),
-        __param(2, core_1.Attribute('block')),
-        __metadata("design:paramtypes", [core_1.ElementRef,
+        tslib_1.__param(2, core_1.Attribute('block')),
+        tslib_1.__metadata("design:paramtypes", [core_1.ElementRef,
             core_1.Renderer2, String])
     ], BlockDirective);
     return BlockDirective;
@@ -128,16 +129,16 @@ var ElemDirective = /** @class */ (function () {
             this._mods = this._mods === mods ? Object.assign({}, mods) : mods;
         }
     };
-    __decorate([
+    tslib_1.__decorate([
         core_1.Input(),
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], ElemDirective.prototype, "mod", void 0);
-    ElemDirective = __decorate([
+    ElemDirective = tslib_1.__decorate([
         core_1.Directive({
             selector: '[elem]',
         }),
-        __param(2, core_1.Attribute('elem')),
-        __metadata("design:paramtypes", [core_1.ElementRef,
+        tslib_1.__param(2, core_1.Attribute('elem')),
+        tslib_1.__metadata("design:paramtypes", [core_1.ElementRef,
             core_1.Renderer2, String, BlockDirective])
     ], ElemDirective);
     return ElemDirective;
@@ -168,7 +169,7 @@ var BemModule = /** @class */ (function () {
         return BemModule_1;
     };
     var BemModule_1;
-    BemModule = BemModule_1 = __decorate([
+    BemModule = BemModule_1 = tslib_1.__decorate([
         core_1.NgModule({
             declarations: [
                 BlockDirective,
