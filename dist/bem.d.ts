@@ -25,6 +25,8 @@ export declare class ElemDirective {
     constructor(element: ElementRef, renderer: Renderer2, name: string, block: BlockDirective);
     ngOnChanges(): void;
 }
+export declare class ModDirective {
+}
 export declare class BemModule {
     static config(data: BemConfig): typeof BemModule;
 }

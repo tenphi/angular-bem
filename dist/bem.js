@@ -144,6 +144,17 @@ var ElemDirective = /** @class */ (function () {
     return ElemDirective;
 }());
 exports.ElemDirective = ElemDirective;
+var ModDirective = /** @class */ (function () {
+    function ModDirective() {
+    }
+    ModDirective = tslib_1.__decorate([
+        core_1.Directive({
+            selector: '[mod]',
+        })
+    ], ModDirective);
+    return ModDirective;
+}());
+exports.ModDirective = ModDirective;
 var BemModule = /** @class */ (function () {
     function BemModule() {
     }
@@ -174,10 +185,12 @@ var BemModule = /** @class */ (function () {
             declarations: [
                 BlockDirective,
                 ElemDirective,
+                ModDirective,
             ],
             exports: [
                 BlockDirective,
                 ElemDirective,
+                ModDirective,
             ]
         })
     ], BemModule);

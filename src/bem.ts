@@ -174,14 +174,21 @@ export class ElemDirective {
   }
 }
 
+@Directive({
+  selector: '[mod]',
+})
+export class ModDirective {}
+
 @NgModule({
   declarations: [
     BlockDirective,
     ElemDirective,
+    ModDirective,
   ],
   exports: [
     BlockDirective,
     ElemDirective,
+    ModDirective,
   ]
 })
 export class BemModule {
