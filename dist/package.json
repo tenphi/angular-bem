@@ -2,11 +2,7 @@
   "name": "angular-bem",
   "version": "2.2.0",
   "description": "A set of Angular (v2+) directives to simplify your workflow with BEM methodology",
-  "main": "dist/bundles/angular-bem.umd.js",
-  "scripts": {
-    "build": "ng-packagr -p package.json",
-    "prepare": "ng-packagr -p package.json"
-  },
+  "main": "bundles/angular-bem.umd.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tenphi/angular-bem.git"
@@ -23,14 +19,14 @@
     "url": "https://github.com/tenphi/angular-bem/issues"
   },
   "homepage": "https://github.com/tenphi/angular-bem#readme",
-  "module": "dist/fesm5/angular-bem.js",
-  "es2015": "dist/fesm2015/angular-bem.js",
-  "esm5": "dist/esm5/angular-bem.js",
-  "esm2015": "dist/esm2015/angular-bem.js",
-  "fesm5": "dist/fesm5/angular-bem.js",
-  "fesm2015": "dist/fesm2015/angular-bem.js",
-  "typings": "dist/angular-bem.d.ts",
-  "metadata": "dist/angular-bem.metadata.json",
+  "module": "fesm5/angular-bem.js",
+  "es2015": "fesm2015/angular-bem.js",
+  "esm5": "esm5/angular-bem.js",
+  "esm2015": "esm2015/angular-bem.js",
+  "fesm5": "fesm5/angular-bem.js",
+  "fesm2015": "fesm2015/angular-bem.js",
+  "typings": "angular-bem.d.ts",
+  "metadata": "angular-bem.metadata.json",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^1.9.0"
@@ -42,10 +38,5 @@
     "ng-packagr": "^3.0.3",
     "rxjs": "^6.0.0",
     "typescript": "~2.7.0"
-  },
-  "ngPackage": {
-    "lib": {
-      "entryFile": "src/bem.ts"
-    }
   }
 }
