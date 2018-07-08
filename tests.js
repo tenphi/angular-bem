@@ -46,9 +46,12 @@ describe('angular-bem', function() {
       });
 
       it('insert element name on svg', function() {
-        var $el = compile('<svg block="tnp-svg-block"><path elem="tnp-svg-elem"></path></svg>')(scope);
+        var $el = compile(
+          '<svg block="tnp-svg-block"><path elem="tnp-svg-elem"></path></svg>'
+        )(scope);
         expect($el.hasClass('tnp-svg-block')).toBe(true);
-        expect($el.children().hasClass('tnp-svg-block__tnp-svg-elem')).toBe(true);
+        expect($el.children().hasClass('tnp-svg-block__tnp-svg-elem'))
+          .toBe(true);
       });
 
       describe('insert modifiers in block', function() {

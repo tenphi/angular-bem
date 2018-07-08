@@ -33,11 +33,6 @@
     return !!~str.indexOf(':');
   }
 
-
-  var getClasses = function(el) {
-    return el[0].className.split(/\s/g);
-  };
-
   var addClass = function(el, cls) {
     el.addClass(cls);
   };
